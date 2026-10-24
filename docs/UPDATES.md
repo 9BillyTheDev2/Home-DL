@@ -18,10 +18,10 @@ L’opération se déroule au premier plan et partage la file d’exécution ave
 
 ## Application APK — dépôt unique public validé
 
-Le propriétaire a validé le principe d’un dépôt Home-DL unique public pour le code et les APK. Aucun dépôt de distribution séparé n’est nécessaire. Le changement de visibilité reste à effectuer dans GitHub après le contrôle des fichiers et de l’historique. L’application pourra ensuite consulter les versions publiques sans clé GitHub.
+Le propriétaire a validé le principe d’un dépôt Home-DL unique public pour le code et les APK. Aucun dépôt de distribution séparé n’est nécessaire. Le passage en public a été effectué par le propriétaire et confirmé via les métadonnées GitHub le 24 octobre 2026. L’application pourra ensuite consulter les versions publiques sans clé GitHub.
 
 La mise à jour de l’APK n’est pas encore implémentée ni activée. Étapes restantes :
-1. Passer le dépôt en public dans ses paramètres GitHub.
+1. Dépôt passé en public : effectué et vérifié.
 2. Créer une clé de signature permanente et la sauvegarder hors du dépôt.
 3. Configurer les secrets de compilation ; ne jamais mettre la clé ou son mot de passe dans les sources.
 4. Signer les versions avec cette clé et publier une release dans ce même dépôt.
