@@ -171,6 +171,7 @@ class MainActivity : Activity() {
     private fun downloadApp(release: AppRelease) {
         begin("Téléchargement de Home-DL " + release.versionName + "…", 200, Stage.UPDATE, initialize = false) { _, token ->
             appUpdates.download(release, token) { percent -> ui { status.text = "Mise à jour Home-DL : " + percent + " %" } }
+            if (token.get()) throw InterruptedException()
             ui {
                 screen.updateApp.text = "Installer la mise à jour téléchargée"
                 screen.appUpdateStatus.text = "APK vérifiée : version, intégrité et signature."

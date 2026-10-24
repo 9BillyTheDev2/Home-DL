@@ -72,6 +72,7 @@ class AppUpdates(private val context: Context) {
             val actual = digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
             require(actual.equals(release.sha256, true)) { "Application update checksum mismatch" }
             verify(part, release.versionCode)
+            HttpsTransfer.active(token, Long.MAX_VALUE)
             require(part.renameTo(apk)) { "Unable to store application update" }
             return apk
         } finally { part.delete() }
@@ -82,17 +83,17 @@ class AppUpdates(private val context: Context) {
         val candidate = context.packageManager.getPackageArchiveInfo(file.absolutePath, PackageManager.GET_SIGNING_CERTIFICATES)
             ?: error("Invalid APK")
         val current = installed()
-        require(candidate.packageName == context.packageName) { "Wrong update package" }
-        require(candidate.longVersionCode > current.longVersionCode &&
-            (expectedVersion == null || candidate.longVersionCode == expectedVersion)) { "Wrong update version" }
         val before = current.signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet().orEmpty()
         val after = candidate.signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet().orEmpty()
-        require(before.isNotEmpty() && before == after) {
-            "Application signature mismatch; update refused. A test build cannot update to a different signature."
-        }
+        UpdateIdentity.requireCompatible(context.packageName, current.longVersionCode, before,
+            candidate.packageName, candidate.longVersionCode, after, expectedVersion)
     }
 
-    fun hasDownloaded() = apk.isFile
+    fun hasDownloaded(): Boolean {
+        if (!apk.isFile) return false
+        return try { verify(apk); true }
+        catch (_: Exception) { apk.delete(); false }
+    }
 
     fun install(activity: Activity) {
         verify(apk)
