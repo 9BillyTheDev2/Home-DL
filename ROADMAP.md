@@ -18,7 +18,7 @@ Aucun filigrane ajouté par Home-DL. Privilégier un fichier sans filigrane lors
 - [x] Code initial du prototype vidéo Android préparé (non validé sur appareil).
 - [ ] APK compilée et testée sur téléphone.
 
-Moteur vidéo référencé dans le prototype Kotlin. Compilation, téléchargements réels et installation sur appareil non validés. Aucune APK produite à ce stade. Voir docs/TESTS.md.
+Prototype 0.1 : compilation GitHub réussie au deuxième lancement, installation et ouverture confirmées sur téléphone. Premier essai Instagram en échec ; nature exacte du média et cause technique non établies. Aucun téléchargement réel validé. Voir docs/TESTS.md.
 
 ## Lot 1 — Faisabilité technique
 
@@ -71,3 +71,7 @@ Structure Kotlin, analyse vidéo, aperçus, sélection, téléchargement tempora
 ## Suivi — première compilation
 
 Première exécution échouée pendant la préparation du SDK, avant compilation du code. Cause confirmée dans les journaux : le paquet SDK `tools` demandé par défaut est introuvable. Workflow corrigé pour demander explicitement `platform-tools`, `platforms;android-35` et `build-tools;35.0.0`. Nouvelle compilation manuelle nécessaire sur main ; ne pas relancer l’ancien commit. Aucun test de compilation Kotlin ou de téléchargement n’est encore validé.
+
+## Suivi — diagnostic 0.1.1
+
+Premier essai sur téléphone : application ouverte, analyse Instagram échouée avec un message trop général. Aucune conclusion possible sur une session obligatoire ou sur le type photo/vidéo. Version 0.1.1 : messages fixes par étape et catégorie d’erreur, sans exposer de lien, chemin ou erreur brute ; mise à jour manuelle du moteur yt-dlp ; marges en dp et prise en compte des barres système. Compilation de cette version et nouveau test à effectuer. La mise à jour utilise GitHub pour le moteur uniquement et n’envoie pas le lien saisi. Les mises à jour moteur ne peuvent pas être interrompues immédiatement par l’API amont ; le délai empêche d’annoncer une réussite tardive mais n’arrête pas nécessairement ce transfert.

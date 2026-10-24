@@ -33,5 +33,8 @@ class Extractor(private val context: Context) {
         require(files.size == 1 && files.first().length() > 0) { "Fichier final introuvable." }
         return files.first()
     }
+    fun update() {
+        YoutubeDL.updateYoutubeDL(context, YoutubeDL.UpdateChannel.STABLE)
+    }
     fun cancel(id: String) { YoutubeDL.destroyProcessById(id) }
 }

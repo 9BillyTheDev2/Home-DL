@@ -10,13 +10,12 @@
 
 ## Contrôles restant à exécuter
 
-Compilation et lint Android : non exécutés dans l’environnement de préparation (SDK et Gradle absents).
-Installation sur appareil : non testée.
-Extraction et téléchargement réels : non testés.
+Prototype 0.1 : workflow nº 2 réussi ; compilation et lint validés par le workflow. Installation et ouverture confirmées par un essai utilisateur. Une publication Instagram a échoué à l’analyse ; la cause reste inconnue, l’ancien message regroupant toutes les erreurs. Aucun lien ni média de cet essai conservé dans le dépôt.
+Version 0.1.1 : compilation et essai du diagnostic à effectuer. Aucun téléchargement réel validé.
 
 | Cas | État |
 | --- | --- |
-| Instagram vidéo publique | Non testé |
+| Instagram publication (type exact non établi) | Échec d’analyse sur 0.1 ; diagnostic à préciser |
 | TikTok vidéo publique | Non testé |
 | X/Twitter vidéo publique | Non testé |
 | Photo seule / carrousel photo | Non implémenté |
@@ -38,4 +37,11 @@ Extraction et téléchargement réels : non testés.
 
 ## Limites connues
 
-Application au premier plan uniquement ; pas de service de téléchargement persistant. Pas d’extraction photo. Pas de connexion aux plateformes. Pas de mise à jour automatique du moteur. Signature debug éphémère. L’identification précise de chaque erreur plateforme reste à améliorer.
+Application au premier plan uniquement ; pas de service de téléchargement persistant. Pas d’extraction photo. Pas de connexion aux plateformes. Mise à jour du moteur à la demande uniquement. Signature debug éphémère. Le diagnostic classe les messages du moteur sans prouver leur cause ; aucun texte brut n’est exposé.
+
+## Vérification 0.1.1 sur téléphone
+
+1. Vérifier que le titre et les boutons restent visibles avec les barres système.
+2. Appuyer sur « Mettre le moteur à jour » et attendre sa confirmation ; aucun lien n’est transmis dans cette opération.
+3. Relancer l’analyse. En cas d’échec, relever l’étape et le code affichés (INIT, AUTH, HTTP_403, EXTRACTION, etc.), sans communiquer de cookie ou identifiant.
+4. Une réussite de mise à jour ne valide pas la compatibilité de la publication.

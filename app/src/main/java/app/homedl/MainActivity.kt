@@ -27,6 +27,7 @@ class MainActivity : Activity() {
     private lateinit var analyze: Button
     private lateinit var download: Button
     private lateinit var cancel: Button
+    private lateinit var updateEngine: Button
     private val selected = linkedSetOf<Media>()
     @Volatile private var busy = false
     @Volatile private var operation: String? = null
@@ -37,11 +38,25 @@ class MainActivity : Activity() {
         extractor = Extractor(applicationContext)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 24, 24, 16)
+            setPadding(dp(16), dp(16), dp(16), dp(12))
             setBackgroundColor(Color.rgb(245, 247, 251))
-            fitsSystemWindows = true
+            fitsSystemWindows = false
         }
         setContentView(root)
+        root.setOnApplyWindowInsetsListener { view, insets ->
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                val bars = insets.getInsets(android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout())
+                val keyboard = insets.getInsets(android.view.WindowInsets.Type.ime())
+                view.setPadding(bars.left + dp(16), bars.top + dp(16),
+                    bars.right + dp(16), maxOf(bars.bottom, keyboard.bottom) + dp(12))
+            } else {
+                @Suppress("DEPRECATION")
+                view.setPadding(insets.systemWindowInsetLeft + dp(16), insets.systemWindowInsetTop + dp(16),
+                    insets.systemWindowInsetRight + dp(16), insets.systemWindowInsetBottom + dp(12))
+            }
+            insets
+        }
+        root.requestApplyInsets()
         root.addView(TextView(this).apply { text = "Home-DL"; textSize = 30f; setTextColor(Color.rgb(0, 24, 51)) })
         root.addView(TextView(this).apply { text = "Collez un lien. Choisissez. Téléchargez."; textSize = 16f })
         link = EditText(this).apply {
@@ -53,6 +68,20 @@ class MainActivity : Activity() {
         root.addView(analyze)
         status = TextView(this).apply { text = "Prototype vidéo • Photos et carrousels non validés"; textSize = 15f }
         root.addView(status)
+        updateEngine = Button(this).apply {
+            text = "Mettre le moteur à jour"
+            setOnClickListener {
+                // Explicit request only; no link or media is included in this update.
+                begin("Mise à jour du moteur…", 180, Stage.UPDATE, initialize = false) { _, token ->
+                    extractor.init()
+                    if (token.get()) throw InterruptedException()
+                    extractor.update()
+                    if (token.get()) throw InterruptedException()
+                    ui { status.text = "Moteur à jour. Vous pouvez relancer l’analyse." }
+                }
+            }
+        }
+        root.addView(updateEngine)
         items = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(ScrollView(this).apply { addView(items) }, LinearLayout.LayoutParams(-1, 0, 1f))
         download = Button(this).apply {
@@ -76,31 +105,39 @@ class MainActivity : Activity() {
         if (intent?.action == Intent.ACTION_SEND && !busy) link.setText(intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty())
     }
 
-    private fun begin(message: String, timeoutSeconds: Long, action: (String, AtomicBoolean) -> Unit) {
+    private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
+    private fun begin(message: String, timeoutSeconds: Long, stage: Stage,
+                      initialize: Boolean = true, action: (String, AtomicBoolean) -> Unit) {
         if (busy) return
         busy = true
         val id = UUID.randomUUID().toString()
         val token = AtomicBoolean(false)
         cancelled = token; operation = id
         analyze.isEnabled = false; download.isEnabled = false; link.isEnabled = false; cancel.isEnabled = true
+        updateEngine.isEnabled = false
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         status.text = message
         val deadline = timer.schedule({
             token.set(true); extractor.cancel(id)
         }, timeoutSeconds, TimeUnit.SECONDS)
         worker.submit {
+            var currentStage = if (initialize) Stage.INIT else stage
             try {
-                extractor.init()
+                if (initialize) extractor.init()
+                currentStage = stage
                 if (token.get()) throw InterruptedException()
                 action(id, token)
-            } catch (_: Exception) {
-                ui { status.text = if (token.get()) "Opération arrêtée (annulation ou délai dépassé)." else
-                    "Échec : lien inaccessible, connexion requise ou média non pris en charge. Aucun identifiant n’est envoyé par Home-DL." }
+            } catch (e: Exception) {
+                val diagnostic = if (token.get()) "STOP • Opération arrêtée (annulation ou délai dépassé)."
+                    else Diagnostics.describe(currentStage, e)
+                ui { status.text = diagnostic }
             } finally {
                 deadline.cancel(false)
                 ui {
                     busy = false; operation = null
                     analyze.isEnabled = true; link.isEnabled = true; cancel.isEnabled = false
+                    updateEngine.isEnabled = true
                     download.isEnabled = selected.isNotEmpty()
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
@@ -111,7 +148,7 @@ class MainActivity : Activity() {
     private fun analyzeLink() {
         val url = try { Links.parse(link.text.toString()) } catch (e: Exception) { status.text = e.message; return }
         items.removeAllViews(); selected.clear()
-        begin("Analyse en cours…", 120) { id, token ->
+        begin("Analyse en cours…", 120, Stage.ANALYZE) { id, token ->
             val found = extractor.analyze(url, id)
             if (token.get()) throw InterruptedException()
             ui {
@@ -124,13 +161,13 @@ class MainActivity : Activity() {
 
     private fun addCard(media: Media) {
         val box = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; setPadding(12, 16, 12, 16)
+            orientation = LinearLayout.VERTICAL; setPadding(dp(8), dp(12), dp(8), dp(12))
         }
         val image = ImageView(this).apply {
             setBackgroundColor(Color.rgb(224, 231, 240)); scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Aperçu de la vidéo"
         }
-        box.addView(image, LinearLayout.LayoutParams(-1, 360))
+        box.addView(image, LinearLayout.LayoutParams(-1, dp(190)))
         box.addView(CheckBox(this).apply {
             text = "${media.title}\n${media.quality}"; textSize = 16f
             setOnCheckedChangeListener { _, checked ->
@@ -176,7 +213,7 @@ class MainActivity : Activity() {
     private fun downloadSelected() {
         val batch = selected.toList()
         if (batch.isEmpty()) return
-        begin("Préparation du téléchargement…", 1800) { id, token ->
+        begin("Préparation du téléchargement…", 1800, Stage.DOWNLOAD) { id, token ->
             var saved = 0
             for (media in batch) {
                 if (token.get()) throw InterruptedException()
