@@ -12,8 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 /** Anonymous public Instagram flow, no account cookies and no third-party service. */
 object InstagramPublic {
     private const val ROOT = "https://www.instagram.com/"
-    private const val QUERY = "PolarisLoggedOutDesktopWWWPostRootContentQuery"
-    private const val DOC = "27130156389949648"
     private const val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
     fun reference(url: String): String {
@@ -57,23 +55,37 @@ object InstagramPublic {
         val csrf = cookies.cookieStore.cookies.firstOrNull { it.name == "csrftoken" }?.value
         check(!csrf.isNullOrBlank()) { "Anonymous CSRF cookie unavailable; extraction failed" }
         val headers = mapOf("X-IG-App-ID" to "936619743392459", "Origin" to ROOT.removeSuffix("/"),
-            "X-CSRFToken" to csrf, "Accept" to "application/json")
+            "X-CSRFToken" to csrf, "Accept" to "application/json", "X-Requested-With" to "XMLHttpRequest")
         val ruling = parse(read(ROOT + "api/v1/web/get_ruling_for_content/?content_type=MEDIA&target_id=" + id, headers))
         check(ruling.optString("status") == "ok") {
             // Do not reproduce server titles/account information in the exception.
             "Public access not granted; login required or audience restricted"
         }
-        val fields = mapOf("lsd" to lsd, "fb_api_caller_class" to "RelayModern",
-            "fb_api_req_friendly_name" to QUERY, "server_timestamps" to "true",
-            "variables" to JSONObject().put("media_id", id).toString(), "doc_id" to DOC)
-        val form = fields.entries.joinToString("&") { (key, value) ->
-            URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
-        }.toByteArray(Charsets.UTF_8)
-        val response = parse(read(ROOT + "api/graphql", headers + mapOf(
-            "X-FB-LSD" to lsd, "X-FB-Friendly-Name" to QUERY, "Referer" to ROOT + "p/" + shortcode + "/"), form))
-        val product = response.optJSONObject("data")?.optJSONObject("xig_polaris_media")
-            ?.optJSONObject("if_not_gated_logged_out")
-        check(product != null) { "Anonymous extraction failed; empty public media response" }
+        fun query(strategy: InstagramQuery): JSONObject {
+            val variables = when (strategy) {
+                InstagramQuery.SHORTCODE -> JSONObject().put("shortcode", shortcode)
+                    .put("__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider", false)
+                InstagramQuery.POLARIS -> JSONObject().put("media_id", id)
+            }
+            val fields = mapOf("lsd" to lsd, "fb_api_caller_class" to "RelayModern",
+                "fb_api_req_friendly_name" to strategy.friendlyName, "server_timestamps" to "true",
+                "variables" to variables.toString(), "doc_id" to strategy.document)
+            val form = fields.entries.joinToString("&") { (key, value) ->
+                URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
+            }.toByteArray(Charsets.UTF_8)
+            val response = parse(read(ROOT + "api/graphql", headers + mapOf(
+                "X-FB-LSD" to lsd, "X-FB-Friendly-Name" to strategy.friendlyName,
+                "Referer" to ROOT + "p/" + shortcode + "/"), form))
+            return InstagramResponse.product(response, strategy, shortcode, id)
+        }
+        val product = try { query(InstagramQuery.SHORTCODE) }
+        catch (first: InstagramFailure) {
+            if (!InstagramResponse.canTryAlternative(first)) throw first
+            try { query(InstagramQuery.POLARIS) }
+            catch (second: InstagramFailure) {
+                throw InstagramFailure(second.category, first.summary + " | " + second.summary)
+            }
+        }
         return media(source, product)
     }
 

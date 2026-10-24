@@ -18,3 +18,5 @@ Home-DL : prototype original, 24 octobre 2026, GPL-3.0-only (voir LICENSE).
 - parth-dl et InstaDownload : sources étudiées pour comprendre le protocole Instagram public ; voir docs/INSTAGRAM_RESEARCH.md. Adaptateur Kotlin Home-DL indépendant ; ni journaux de médias ni identité de robot de recherche repris.
 
 La documentation et l’API de youtubedl-android ont été consultées. Ce relevé ne constitue pas un audit complet de toutes les dépendances transitives. La compilation et les tests sur appareil restent nécessaires.
+
+- Instaloader : https://github.com/instaloader/instaloader/blob/master/instaloader/structures.py ; protocole de requête publique par shortcode étudié pour la correction 0.2.1. Bibliothèque et code Python non intégrés ; lecture Kotlin indépendante des deux enveloppes de réponse.

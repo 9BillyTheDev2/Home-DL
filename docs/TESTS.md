@@ -100,3 +100,9 @@ Restent à vérifier sur Android : session anonyme et réseau du téléphone, vr
 ## Première compilation permanente — 0.2.0
 
 Exécution 40127772969 réussie : testDebugUnitTest, assembleRelease et lintRelease, préparation du manifeste et vérification apksigner, publication de la release. Après publication : route de vérification utilisée par l’app accessible, version 7/0.2.0, APK réellement téléchargée et taille exacte 65 039 980 octets, SHA-256 conforme au manifeste et aux métadonnées GitHub. Vérification indépendante avec apksig officiel 8.7.3 : signature v2 valide et certificat conforme à l’empreinte permanente. Inspection ZIP : absence de fichiers de clé privée et de mot de passe de compilation dans les entrées APK inspectées. Aucune installation ni mise à jour Android n’est inférée de ces tests.
+
+## Préparation 0.2.1
+
+Échec utilisateur observé sur 0.2.0 : produit public absent dans la réponse reçue par l’app, sans détail serveur conservé. Ce refus n’a pas été reproduit depuis l’environnement de développement. Test du lien exact avec le code Kotlin de production de la correction : analyse et téléchargement de quatre photos, 1440 × 1920, formats vérifiés ; tailles 403184, 383260, 248864 et 268766 octets. Une tentative Java directe a d’abord échoué à cause de l’absence de prise en compte du proxy standard de l’environnement ; le test a ensuite utilisé ce proxy déjà configuré, sans modifier le code de l’app, désactiver TLS ou ajouter de réseau alternatif. Les images de l’essai ont été supprimées.
+
+Nouveaux tests : enveloppe shortcode et carrousel de quatre photos, enveloppe Polaris, erreurs data:null, résumé sans métadonnées, refus de public ou de limitation sans alternative, erreur de post différent. Fixtures synthétiques ; aucun shortcode, lien ou réponse du propriétaire dans le dépôt ou les journaux Actions. Compilation Android et publication restent à confirmer.

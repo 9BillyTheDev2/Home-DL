@@ -9,6 +9,13 @@ object Diagnostics {
     private fun messages(error: Throwable) = generateSequence(error) { it.cause }.take(5).toList()
 
     fun classify(error: Throwable): FailureInfo {
+        if (error is InstagramFailure) return FailureInfo(error.category, when (error.category) {
+            "IG_RATE" -> "Instagram limite les requêtes. Attendez avant de réessayer."
+            "IG_ACCESS" -> "Instagram refuse cet accès anonyme. Aucun contournement n’a été tenté."
+            "IG_QUERY" -> "Instagram a renvoyé une erreur de requête. Le diagnostic contient ses codes techniques."
+            "IG_MISMATCH" -> "La réponse ne correspond pas à la publication demandée ; téléchargement refusé."
+            else -> "Les deux méthodes anonymes n’ont reçu aucun média. Consultez le diagnostic détaillé."
+        })
         val text = messages(error).joinToString("\n") { it.message.orEmpty() }.lowercase(Locale.ROOT)
         fun result(code: String, message: String) = FailureInfo(code, message)
         val causeText = text.substringBefore("use --cookies").substringBefore("use --username")

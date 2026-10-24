@@ -137,3 +137,11 @@ Clé RSA 3072 bits, PKCS12, certificat CN=Home-DL sans renseignement personnel. 
 ## Suivi — première release permanente livrée
 
 v0.2.0 publiée avec Home-DL.apk et update.json dans le même dépôt. Route latest/download/update.json vérifiée après publication ; versionCode 7, versionName 0.2.0, URL et taille cohérentes, SHA-256 vérifié sur les octets réellement téléchargés. Publication et contrôles terminés ; première installation manuelle puis futur parcours de mise à jour/conservation des réglages à vérifier sur téléphone. Le test de téléchargement Instagram public est confirmé sur JVM ; photos/carrousels et MediaStore restent à valider sur appareil. Pas de mise à jour silencieuse : Android conserve la confirmation d’installation.
+
+## En préparation — 0.2.1, carrousel Instagram et erreurs de requête
+
+Un essai utilisateur 0.2.0 a échoué avec une réponse publique vide, classée UNKNOWN. Sur le lien transmis (non conservé dans le dépôt), les deux requêtes testées depuis l’environnement de développement rendent un carrousel de quatre photos. Cela ne reproduit pas le refus sur le téléphone ; la cause réseau/serveur précise reste inconnue. La page HTML publique testée n’expose pas ces médias : aucune extraction HTML spéculative ajoutée.
+
+Correction des limites confirmées : requête publique par shortcode utilisée par Instaloader en première intention, requête Polaris en alternative au maximum une fois si la réponse est vide ou signale une erreur de requête. Arrêt immédiat sur limitation ou accès explicitement refusé. Vérification que les données correspondent au post demandé. Les erreurs portent désormais des codes Instagram dédiés et un résumé technique sans texte serveur, lien, auteur ni cookie.
+
+Code Kotlin de production compilé et testé localement sur le lien exact avec le routage réseau standard de l’environnement : quatre photos téléchargées et formats vérifiés, 1440 × 1920, tailles 403184 / 383260 / 248864 / 268766 octets. Les fichiers d’image n’ont pas été conservés. Source et réponses de l’utilisateur uniquement dans les fichiers temporaires locaux, jamais dans les tests ou journaux GitHub publics. Compilation Android, tests et publication 0.2.1 à exécuter. Première mise à jour via l’app et confirmation du résultat sur téléphone restent à valider.
