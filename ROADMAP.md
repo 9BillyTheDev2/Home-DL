@@ -2,7 +2,7 @@
 
 Mis à jour le 24 octobre 2026.
 
-**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente configurée ; première publication signée en cours ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
+**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente configurée et v0.2.0 publiée ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -132,4 +132,8 @@ Publication signée préparée dans le workflow manuel (signed-release + publish
 
 ## Suivi — signature permanente autorisée
 
-Clé RSA 3072 bits, PKCS12, certificat CN=Home-DL sans renseignement personnel. Quatre secrets Actions enregistrés sur le dépôt avec l’accord du propriétaire ; sauvegarde privée conservée hors des sources. Empreinte publique dans docs/SIGNING_CERTIFICATE.md. Gradle précise maintenant le format PKCS12. Compilation signed-release et publication de v0.2.0 à vérifier avant livraison. Aucune clé ni mot de passe ajouté au Git.
+Clé RSA 3072 bits, PKCS12, certificat CN=Home-DL sans renseignement personnel. Quatre secrets Actions enregistrés sur le dépôt avec l’accord du propriétaire ; sauvegarde privée conservée hors des sources. Empreinte publique dans docs/SIGNING_CERTIFICATE.md. Gradle précise maintenant le format PKCS12. Compilation signed-release et publication v0.2.0 réussies (exécution 40127772969, commit 48f07ea75bdbd9e343c1ad086c7baf20978f9b96). APK publique de 65 039 980 octets, somme SHA-256 et route de mise à jour vérifiées. Signature APK v2 contrôlée avec la bibliothèque officielle apksig 8.7.3 ; certificat conforme à l’empreinte permanente. Aucun fichier de clé ni mot de passe de signature détecté dans l’APK. Aucune clé ni mot de passe ajouté au Git.
+
+## Suivi — première release permanente livrée
+
+v0.2.0 publiée avec Home-DL.apk et update.json dans le même dépôt. Route latest/download/update.json vérifiée après publication ; versionCode 7, versionName 0.2.0, URL et taille cohérentes, SHA-256 vérifié sur les octets réellement téléchargés. Publication et contrôles terminés ; première installation manuelle puis futur parcours de mise à jour/conservation des réglages à vérifier sur téléphone. Le test de téléchargement Instagram public est confirmé sur JVM ; photos/carrousels et MediaStore restent à valider sur appareil. Pas de mise à jour silencieuse : Android conserve la confirmation d’installation.

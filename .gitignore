@@ -4,3 +4,10 @@ local.properties
 app/src/main/assets/engine/yt-dlp
 *.jks
 *.keystore
+
+# Permanent signing material must never be committed.
+*.p12
+*.pfx
+**/github-secrets.json
+**/store-password.txt
+Home-DL-signature-*.zip
