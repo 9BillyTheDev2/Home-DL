@@ -83,3 +83,5 @@ Résultat de validation 0.1.4 : testDebugUnitTest, assembleDebug et lintDebug r�
 - Tests ajoutés : lecture exacte des sommes (exclusion .exe/.tar.gz, absence/doublon refusés), distinction DNS/restriction de public.
 
 À vérifier sur téléphone : diagnostic moteur 2026.10.21 même si la vérification réseau échoue ; contrôle manuel sans api.github.com ; vidéo publique directe avec aperçu, sélection et copie dans Téléchargements/Home-DL ; vidéo publique de chaque plateforme séparément. Photos/carrousels et mises à jour APK non implémentés.
+
+Résultat GitHub Actions : exécution 40113703258 réussie sur le commit 207ef46410d3c452c3be3621d99737e949aebc6e ; vérification de l’actif, douze tests unitaires, assembleDebug et lintDebug terminés sans échec. Artefact APK ARM64 produit. Aucun succès Instagram/TikTok/X ou Android/MediaStore n’en est déduit.

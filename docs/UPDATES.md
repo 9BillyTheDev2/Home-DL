@@ -1,16 +1,18 @@
 # Mises à jour Home-DL
 
-## Moteur yt-dlp — implémenté, à tester
+## Moteur yt-dlp — 0.1.5, compilation validée, essai téléphone attendu
 
-La version 0.1.2 vérifie la version stable à l’ouverture de l’application :
+La version 0.1.5 intègre le moteur officiel 2026.10.21 dans l’APK, avec SHA-256 épinglé et contrôlé lors de la compilation et de l’installation locale. Le moteur devient disponible sans téléchargement supplémentaire depuis le téléphone ; une version installée plus récente est conservée. La préparation locale demande `python3 scripts/prepare_engine.py` avant Gradle. Le fichier généré n’est pas versionné.
+
+Elle vérifie la version stable à l’ouverture de l’application :
 - au maximum une vérification réussie par période de 24 heures ;
 - après échec, attendre au moins 6 heures avant un nouvel essai automatique ;
 - un interrupteur permet de désactiver cette vérification ;
 - le bouton manuel permet de vérifier sans attendre.
 
-La vérification et le téléchargement passent par les serveurs officiels GitHub du projet yt-dlp. Aucun lien de publication, cookie ou identifiant utilisateur n’est transmis lors de cette opération. Les serveurs contactés voient nécessairement l’adresse IP de connexion. Aucun compte GitHub n’est demandé.
+La vérification utilise la redirection officielle github.com/yt-dlp/yt-dlp/releases/latest, puis les fichiers de la version résolue. Aucun accès à api.github.com depuis le téléphone n’est nécessaire. La vérification et le téléchargement passent par les serveurs officiels GitHub du projet yt-dlp. Aucun lien de publication, cookie ou identifiant utilisateur n’est transmis lors de cette opération. Les serveurs contactés voient nécessairement l’adresse IP de connexion. Aucun compte GitHub n’est demandé.
 
-Taille bornée, HTTPS, hôtes autorisés, délais de connexion/lecture et somme SHA-256 publiée dans les métadonnées GitHub vérifiés avant installation. La somme sert à vérifier l’intégrité du téléchargement ; elle n’est pas une signature indépendante de GitHub. Le remplacement utilise AtomicFile pour conserver une sauvegarde pendant l’écriture. En cas d’erreur de téléchargement ou de vérification, le moteur précédent reste disponible. Une incompatibilité fonctionnelle de la nouvelle version nécessite encore une intervention : pas de restauration automatique après échec d’extraction.
+Taille bornée, HTTPS, hôtes autorisés, délais de connexion/lecture et somme SHA-256 publiée dans le fichier officiel SHA2-256SUMS de la même release vérifiés avant installation. La somme sert à vérifier l’intégrité du téléchargement ; elle n’est pas une signature indépendante de GitHub. Le remplacement utilise AtomicFile pour conserver une sauvegarde pendant l’écriture. En cas d’erreur de téléchargement ou de vérification, le moteur précédent reste disponible. Une incompatibilité fonctionnelle de la nouvelle version nécessite encore une intervention : pas de restauration automatique après échec d’extraction.
 
 Seul le programme Python yt-dlp est actualisé. L’interface, Python, FFmpeg et les autres bibliothèques natives nécessitent une nouvelle APK. Une mise à jour moteur ne garantit pas la compatibilité d’un site.
 
