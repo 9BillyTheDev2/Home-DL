@@ -12,7 +12,7 @@ Contrôles : HTTPS et hôtes GitHub autorisés à chaque redirection, manifeste 
 
 Les APK 0.1.x sont des builds debug avec signature temporaire. Le chemin intégré ne peut pas les transformer en une application signée par une autre clé. Une première installation manuelle de la version permanente reste nécessaire ; si Android refuse la signature différente, il faudra désinstaller la version de test, ce qui effacera ses réglages (les médias enregistrés dans Téléchargements restent des fichiers partagés). Ne rien désinstaller tant que la release permanente n’est pas prête.
 
-La clé permanente doit être sauvegardée en privé et enregistrée dans les secrets de compilation. Elle ne doit jamais apparaître dans le code, l’historique Git, un journal, un artefact public ou une conversation. Les quatre secrets attendus restent HOME_DL_KEYSTORE_BASE64, HOME_DL_STORE_PASSWORD, HOME_DL_KEY_ALIAS, HOME_DL_KEY_PASSWORD. La configuration n’est pas effectuée à ce stade.
+La clé permanente doit être sauvegardée en privé et enregistrée dans les secrets de compilation. Elle ne doit jamais apparaître dans le code, l’historique Git, un journal, un artefact public ou une conversation. Les quatre secrets attendus restent HOME_DL_KEYSTORE_BASE64, HOME_DL_STORE_PASSWORD, HOME_DL_KEY_ALIAS, HOME_DL_KEY_PASSWORD. Les quatre secrets ont été enregistrés avec l’accord du propriétaire le 24 octobre 2026 ; une sauvegarde privée a été conservée hors des sources. Gradle utilise explicitement le format PKCS12. La première compilation signée et sa publication sont en cours de vérification.
 
 ## Livraison
 
@@ -26,4 +26,4 @@ Le moteur officiel 2026.10.21 est intégré avec SHA-256 épinglé (scripts/prep
 
 ## Validation du code
 
-Compilation, lint et tests JVM réussis dans l’exécution 40126888285. Les contrôles de package/version/certificat sont couverts par tests. La vérification Android d’APK et le parcours complet entre deux versions signées restent à essayer après configuration des secrets. La page GitHub des secrets a été consultée : aucun secret de dépôt ou d’environnement à cette date. Aucune clé générée ou enregistrée par cette étape.
+Compilation, lint et tests JVM réussis dans l’exécution 40126888285. Les contrôles de package/version/certificat sont couverts par tests. La vérification Android d’APK et le parcours complet entre deux versions signées restent à essayer après configuration des secrets. État lors de la validation du code : les secrets étaient absents. Ils ont ensuite été configurés après accord explicite ; voir docs/SIGNING_CERTIFICATE.md. La publication et les contrôles d’APK doivent encore être confirmés.

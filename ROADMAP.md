@@ -2,7 +2,7 @@
 
 Mis à jour le 24 octobre 2026.
 
-**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente et première publication encore à configurer ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
+**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente configurée ; première publication signée en cours ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -129,3 +129,7 @@ Adaptateur Instagram anonyme intégré au code : liens de publications/reels/TV 
 Code de mise à jour APK ajouté : recherche automatique à l’ouverture (6 h entre tentatives), bouton de vérification, annonce d’une version disponible, téléchargement après choix utilisateur, contrôle SHA-256/package/version/certificat identique, puis confirmation Android. Source unique : releases publiques de ce dépôt. Interrupteur pour la recherche automatique. Le moteur garde son propre mécanisme.
 
 Publication signée préparée dans le workflow manuel (signed-release + publish). Aucune clé créée ni aucun secret ajouté par cette étape. Il faut enregistrer une clé permanente hors des sources avant la première release, puis tester deux mises à jour successives sur appareil. Les APK de test précédentes ne partagent pas nécessairement cette signature : une transition manuelle reste nécessaire. Ne pas distribuer une nouvelle APK debug comme solution aux réinstallations répétées.
+
+## Suivi — signature permanente autorisée
+
+Clé RSA 3072 bits, PKCS12, certificat CN=Home-DL sans renseignement personnel. Quatre secrets Actions enregistrés sur le dépôt avec l’accord du propriétaire ; sauvegarde privée conservée hors des sources. Empreinte publique dans docs/SIGNING_CERTIFICATE.md. Gradle précise maintenant le format PKCS12. Compilation signed-release et publication de v0.2.0 à vérifier avant livraison. Aucune clé ni mot de passe ajouté au Git.

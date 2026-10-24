@@ -15,6 +15,7 @@ android {
     signingConfigs {
         if (!System.getenv("HOME_DL_KEYSTORE").isNullOrBlank()) {
             create("permanent") {
+                storeType = "PKCS12"
                 storeFile = file(System.getenv("HOME_DL_KEYSTORE"))
                 storePassword = System.getenv("HOME_DL_STORE_PASSWORD")
                 keyAlias = System.getenv("HOME_DL_KEY_ALIAS")
