@@ -70,3 +70,5 @@ Compilation assembleDebug et lintDebug réussis sur GitHub Actions pour le thèm
 Tests automatisés ajoutés : aide cookies sans faux AUTH ; priorité HTTP 403 ; accès ambigu ; distinction AUTH/429 ; erreur de dépendance moteur ; masquage de secrets/adresses/liens/chemins ; réponse JSON sans métadonnées ; longueur bornée. Workflow : testDebugUnitTest, assembleDebug et lintDebug.
 
 À vérifier sur téléphone : croix rouge efface le lien, les résultats et le diagnostic ; croix désactivée pendant une opération ; lien sur plusieurs lignes ; affichage des détails après échec ; copie volontaire du diagnostic ; nouvelle analyse efface le diagnostic précédent. Le masquage automatique ne garantit pas l’absence de tout renseignement dans une erreur inconnue : le texte est présenté pour relecture avant copie. Aucun journal n’est transmis automatiquement.
+
+Résultat de validation 0.1.4 : testDebugUnitTest, assembleDebug et lintDebug réussis ; APK ARM64 produite. Les essais UI sur le téléphone et l’analyse du prochain diagnostic utilisateur restent à effectuer. Aucun succès de téléchargement sur plateforme n’est déduit de ces tests.
