@@ -21,6 +21,7 @@ class MainActivity : Activity() {
     private val previews = Executors.newFixedThreadPool(2)
     private val timer = Executors.newSingleThreadScheduledExecutor()
     private lateinit var extractor: Extractor
+    private lateinit var screen: RetroScreen
     private lateinit var link: EditText
     private lateinit var status: TextView
     private lateinit var items: LinearLayout
@@ -39,73 +40,51 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         extractor = Extractor(applicationContext)
         engineUpdates = EngineUpdates(applicationContext)
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(12))
-            setBackgroundColor(Color.rgb(245, 247, 251))
-            fitsSystemWindows = false
-        }
+        screen = RetroScreen(this)
+        val root = screen.root
+        link = screen.link
+        analyze = screen.analyze
+        status = screen.status
+        items = screen.items
+        download = screen.download
+        cancel = screen.cancel
+        updateEngine = screen.updateEngine
+        automaticUpdates = screen.automaticUpdates
         setContentView(root)
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = 0
         root.setOnApplyWindowInsetsListener { view, insets ->
             if (android.os.Build.VERSION.SDK_INT >= 30) {
                 val bars = insets.getInsets(android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout())
                 val keyboard = insets.getInsets(android.view.WindowInsets.Type.ime())
-                view.setPadding(bars.left + dp(16), bars.top + dp(16),
+                view.setPadding(bars.left + dp(16), bars.top + dp(12),
                     bars.right + dp(16), maxOf(bars.bottom, keyboard.bottom) + dp(12))
             } else {
                 @Suppress("DEPRECATION")
-                view.setPadding(insets.systemWindowInsetLeft + dp(16), insets.systemWindowInsetTop + dp(16),
+                view.setPadding(insets.systemWindowInsetLeft + dp(16), insets.systemWindowInsetTop + dp(12),
                     insets.systemWindowInsetRight + dp(16), insets.systemWindowInsetBottom + dp(12))
             }
             insets
         }
         root.requestApplyInsets()
-        root.addView(TextView(this).apply { text = "Home-DL"; textSize = 30f; setTextColor(Color.rgb(0, 24, 51)) })
-        root.addView(TextView(this).apply { text = "Collez un lien. Choisissez. Téléchargez."; textSize = 16f })
-        link = EditText(this).apply {
-            hint = "https://…"; inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
-            maxLines = 3
+        analyze.setOnClickListener { analyzeLink() }
+        download.setOnClickListener { downloadSelected() }
+        cancel.setOnClickListener {
+            cancelled.set(true)
+            operation?.let { extractor.cancel(it) }
+            status.text = "Annulation…"
         }
-        root.addView(link)
-        analyze = Button(this).apply { text = "Analyser"; setOnClickListener { analyzeLink() } }
-        root.addView(analyze)
-        status = TextView(this).apply { text = "Prototype vidéo • Photos et carrousels non validés"; textSize = 15f }
-        root.addView(status)
-        updateEngine = Button(this).apply {
-            text = "Mettre le moteur à jour"
-            setOnClickListener {
-                // Explicit request only; no link or media is included in this update.
-                begin("Mise à jour du moteur…", 180, Stage.UPDATE, initialize = false) { _, token ->
-                    extractor.init()
-                    if (token.get()) throw InterruptedException()
-                    val result = engineUpdates.check(token)
-                    if (token.get()) throw InterruptedException()
-                    ui { status.text = "$result Vous pouvez relancer l’analyse." }
-                }
+        automaticUpdates.isChecked = engineUpdates.enabled()
+        automaticUpdates.setOnCheckedChangeListener { _, enabled -> engineUpdates.setEnabled(enabled) }
+        updateEngine.setOnClickListener {
+            begin("Mise à jour du moteur…", 180, Stage.UPDATE, initialize = false) { _, token ->
+                extractor.init()
+                if (token.get()) throw InterruptedException()
+                val result = engineUpdates.check(token)
+                if (token.get()) throw InterruptedException()
+                ui { status.text = "$result Vous pouvez relancer l’analyse." }
             }
         }
-        root.addView(updateEngine)
-        automaticUpdates = Switch(this).apply {
-            text = "Mises à jour automatiques du moteur"
-            isChecked = engineUpdates.enabled()
-            setOnCheckedChangeListener { _, enabled -> engineUpdates.setEnabled(enabled) }
-        }
-        root.addView(automaticUpdates)
-        items = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        root.addView(ScrollView(this).apply { addView(items) }, LinearLayout.LayoutParams(-1, 0, 1f))
-        download = Button(this).apply {
-            text = "Télécharger la sélection"; isEnabled = false
-            setOnClickListener { downloadSelected() }
-        }
-        cancel = Button(this).apply {
-            text = "Annuler"; isEnabled = false
-            setOnClickListener { cancelled.set(true); operation?.let { extractor.cancel(it) }; status.text = "Annulation…" }
-        }
-        root.addView(download); root.addView(cancel)
-        root.addView(TextView(this).apply {
-            text = "Fichiers : Téléchargements / Home-DL\nGardez cette fenêtre ouverte pendant le test."
-            textSize = 12f
-        })
         acceptShare(intent)
         if (engineUpdates.due()) {
             begin("Vérification du moteur…", 100, Stage.UPDATE, initialize = false) { _, token ->
@@ -135,6 +114,7 @@ class MainActivity : Activity() {
                       initialize: Boolean = true, action: (String, AtomicBoolean) -> Unit) {
         if (busy) return
         busy = true
+        screen.setBusy(true)
         val id = UUID.randomUUID().toString()
         val token = AtomicBoolean(false)
         cancelled = token; operation = id
@@ -161,6 +141,7 @@ class MainActivity : Activity() {
                 deadline.cancel(false)
                 ui {
                     busy = false; operation = null
+                    screen.setBusy(false)
                     analyze.isEnabled = true; link.isEnabled = true; cancel.isEnabled = false
                     updateEngine.isEnabled = true
                     automaticUpdates.isEnabled = true
@@ -173,13 +154,14 @@ class MainActivity : Activity() {
 
     private fun analyzeLink() {
         val url = try { Links.parse(link.text.toString()) } catch (e: Exception) { status.text = e.message; return }
-        items.removeAllViews(); selected.clear()
+        items.removeAllViews(); selected.clear(); screen.setMediaCount(0)
         begin("Analyse en cours…", 120, Stage.ANALYZE) { id, token ->
             val found = extractor.analyze(url, id)
             if (token.get()) throw InterruptedException()
             ui {
                 status.text = if (found.isEmpty()) "Aucune vidéo détectée. Les photos ne sont pas encore prises en charge."
                     else "${found.size} vidéo(s) détectée(s). Sélectionnez les éléments."
+                screen.setMediaCount(found.size)
                 found.forEach { media -> addCard(media) }
             }
         }
@@ -189,13 +171,15 @@ class MainActivity : Activity() {
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(8), dp(12), dp(8), dp(12))
         }
+        screen.decorateCard(box)
         val image = ImageView(this).apply {
-            setBackgroundColor(Color.rgb(224, 231, 240)); scaleType = ImageView.ScaleType.CENTER_CROP
+            setBackgroundColor(RetroScreen.BACKGROUND); scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Aperçu de la vidéo"
         }
         box.addView(image, LinearLayout.LayoutParams(-1, dp(190)))
         box.addView(CheckBox(this).apply {
             text = "${media.title}\n${media.quality}"; textSize = 16f
+            screen.styleSelection(this)
             setOnCheckedChangeListener { _, checked ->
                 if (checked) selected.add(media) else selected.remove(media)
                 download.isEnabled = !busy && selected.isNotEmpty()
@@ -258,6 +242,9 @@ class MainActivity : Activity() {
     }
 
     private fun ui(action: () -> Unit) { runOnUiThread { if (!isDestroyed) action() } }
+
+    override fun onResume() { super.onResume(); if (::screen.isInitialized) screen.resume() }
+    override fun onPause() { if (::screen.isInitialized) screen.pause(); super.onPause() }
 
     override fun onDestroy() {
         cancelled.set(true); operation?.let { extractor.cancel(it) }

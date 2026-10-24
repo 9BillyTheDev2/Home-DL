@@ -99,3 +99,7 @@ Copie publique indépendante importée sur le compte de développement demandé.
 ## Suivi — ancien dépôt supprimé
 
 Suppression confirmée par le propriétaire et ancien chemin inaccessible (404). Le dépôt public du compte de développement reste accessible, ainsi que la roadmap. Cette copie devient l’unique dépôt de travail. Signature permanente et mises à jour APK restent à configurer.
+
+## Suivi — interface rétro-futuriste 0.1.3
+
+Direction visuelle validée : inspiration terminal numérique et machine temporelle, noir profond, vert/cyan et orange, typographie monospace, cadrans source/connexion/destination et cartes médias. Interface isolée dans RetroScreen pour garder la logique d’extraction dans MainActivity. Pluie de code confinée à l’en-tête, environ 12 images/s, arrêt en arrière-plan et respect du réglage Android des animations ; interrupteur mémorisé pour la désactiver. Réglages moteur repliables, aperçu vide, actions en bas, marges système et zones tactiles de 48 dp minimum. Aucun logo ni image de film intégré. Compilation et rendu Android de cette version à valider ; signature permanente et mises à jour APK restent en cours de configuration.
