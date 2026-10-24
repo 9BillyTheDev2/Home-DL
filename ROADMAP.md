@@ -94,4 +94,8 @@ Le propriétaire a changé la visibilité ; vérification des métadonnées GitH
 
 ## Suivi — changement de compte propriétaire
 
-Copie publique indépendante importée sur le compte de développement demandé. Avant modification du suivi, comparaison avec le dépôt source : 20 fichiers identiques par chemin et SHA, 10 commits identiques et même tête de branche. Code et historique principal conservés. Les exécutions Actions et leurs artefacts ne sont pas transférés par l’import Git. Confidentialité de l’adresse de commit activée pour le compte de destination. L’ancien dépôt n’est pas supprimé : sa suppression exige l’accès au compte propriétaire d’origine. La signature permanente et la mise à jour APK restent à finaliser sur le nouveau dépôt.
+Copie publique indépendante importée sur le compte de développement demandé. Avant modification du suivi, comparaison avec le dépôt source : 20 fichiers identiques par chemin et SHA, 10 commits identiques et même tête de branche. Code et historique principal conservés. Les exécutions Actions et leurs artefacts ne sont pas transférés par l’import Git. Confidentialité de l’adresse de commit activée pour le compte de destination. L’ancien dépôt a été supprimé par le propriétaire ; son ancien chemin renvoie désormais 404 via la connexion du compte d’origine. La signature permanente et la mise à jour APK restent à finaliser sur le nouveau dépôt.
+
+## Suivi — ancien dépôt supprimé
+
+Suppression confirmée par le propriétaire et ancien chemin inaccessible (404). Le dépôt public du compte de développement reste accessible, ainsi que la roadmap. Cette copie devient l’unique dépôt de travail. Signature permanente et mises à jour APK restent à configurer.
