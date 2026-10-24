@@ -16,7 +16,7 @@ Aucun filigrane ajouté par Home-DL. Privilégier un fichier sans filigrane lors
 - [ ] Audit du code et des licences des composants retenus.
 - [ ] Choix technique confirmé par compilation et extraction réelle.
 - [x] Code initial du prototype vidéo Android préparé (non validé sur appareil).
-- [ ] APK compilée et testée sur téléphone.
+- [x] Première APK compilée, installée et ouverte sur téléphone ; extraction non validée.
 
 Prototype 0.1 : compilation GitHub réussie au deuxième lancement, installation et ouverture confirmées sur téléphone. Premier essai Instagram en échec ; nature exacte du média et cause technique non établies. Aucun téléchargement réel validé. Voir docs/TESTS.md.
 
@@ -75,3 +75,11 @@ Première exécution échouée pendant la préparation du SDK, avant compilation
 ## Suivi — diagnostic 0.1.1
 
 Premier essai sur téléphone : application ouverte, analyse Instagram échouée avec un message trop général. Aucune conclusion possible sur une session obligatoire ou sur le type photo/vidéo. Version 0.1.1 : messages fixes par étape et catégorie d’erreur, sans exposer de lien, chemin ou erreur brute ; mise à jour manuelle du moteur yt-dlp ; marges en dp et prise en compte des barres système. Compilation de cette version et nouveau test à effectuer. La mise à jour utilise GitHub pour le moteur uniquement et n’envoie pas le lien saisi. Les mises à jour moteur ne peuvent pas être interrompues immédiatement par l’API amont ; le délai empêche d’annoncer une réussite tardive mais n’arrête pas nécessairement ce transfert.
+
+## Suivi — mises à jour 0.1.2
+
+Code de mise à jour automatique du moteur préparé : vérification à l’ouverture, 24 h entre succès, 6 h après échec, interrupteur et contrôle manuel ; HTTPS, origine, taille et SHA-256 vérifiés, remplacement atomique. Aucun lien saisi transmis lors de cette vérification. Compilation et tests appareil de cette version restent à exécuter. Le moteur existant est conservé si la vérification ou le téléchargement échoue.
+
+Mises à jour APK non activées : signature permanente et destination de distribution encore à définir. Le dépôt privé reste privé. Proposition concrète dans docs/UPDATES.md : distribution via un dépôt public distinct après validation. Aucun secret créé ou ajouté.
+
+Compilation signée préparée dans Gradle et dans le workflow manuel : option debug conservée, option signed-release conditionnée à quatre secrets. Aucune signature permanente configurée et aucune publication exécutée.

@@ -1,6 +1,14 @@
 name: APK de test
 on:
   workflow_dispatch:
+    inputs:
+      package:
+        description: Type de compilation
+        type: choice
+        default: debug
+        options:
+          - debug
+          - signed-release
 permissions:
   contents: read
 concurrency:
@@ -23,11 +31,30 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Compiler et vérifier
+      - name: Compiler le prototype
+        if: inputs.package == 'debug'
         run: gradle :app:assembleDebug :app:lintDebug --no-daemon
+      - name: Compiler avec la signature permanente
+        if: inputs.package == 'signed-release'
+        env:
+          HOME_DL_KEYSTORE_BASE64: ${{ secrets.HOME_DL_KEYSTORE_BASE64 }}
+          HOME_DL_STORE_PASSWORD: ${{ secrets.HOME_DL_STORE_PASSWORD }}
+          HOME_DL_KEY_ALIAS: ${{ secrets.HOME_DL_KEY_ALIAS }}
+          HOME_DL_KEY_PASSWORD: ${{ secrets.HOME_DL_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$HOME_DL_KEYSTORE_BASE64" || -z "$HOME_DL_STORE_PASSWORD" || -z "$HOME_DL_KEY_ALIAS" || -z "$HOME_DL_KEY_PASSWORD" ]]; then
+            echo "::error::Signature permanente non configurée. Utilisez debug ou configurez les quatre secrets HOME_DL."
+            exit 1
+          fi
+          export HOME_DL_KEYSTORE="$RUNNER_TEMP/home-dl-signing.jks"
+          trap 'rm -f "$HOME_DL_KEYSTORE"' EXIT
+          printf '%s' "$HOME_DL_KEYSTORE_BASE64" | base64 --decode > "$HOME_DL_KEYSTORE"
+          gradle :app:assembleRelease :app:lintRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: Home-DL-prototype-arm64
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/**/*.apk
           retention-days: 7
           if-no-files-found: error

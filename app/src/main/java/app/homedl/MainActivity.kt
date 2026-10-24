@@ -28,6 +28,8 @@ class MainActivity : Activity() {
     private lateinit var download: Button
     private lateinit var cancel: Button
     private lateinit var updateEngine: Button
+    private lateinit var engineUpdates: EngineUpdates
+    private lateinit var automaticUpdates: Switch
     private val selected = linkedSetOf<Media>()
     @Volatile private var busy = false
     @Volatile private var operation: String? = null
@@ -36,6 +38,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         extractor = Extractor(applicationContext)
+        engineUpdates = EngineUpdates(applicationContext)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(16), dp(16), dp(12))
@@ -75,13 +78,19 @@ class MainActivity : Activity() {
                 begin("Mise à jour du moteur…", 180, Stage.UPDATE, initialize = false) { _, token ->
                     extractor.init()
                     if (token.get()) throw InterruptedException()
-                    extractor.update()
+                    val result = engineUpdates.check(token)
                     if (token.get()) throw InterruptedException()
-                    ui { status.text = "Moteur à jour. Vous pouvez relancer l’analyse." }
+                    ui { status.text = "$result Vous pouvez relancer l’analyse." }
                 }
             }
         }
         root.addView(updateEngine)
+        automaticUpdates = Switch(this).apply {
+            text = "Mises à jour automatiques du moteur"
+            isChecked = engineUpdates.enabled()
+            setOnCheckedChangeListener { _, enabled -> engineUpdates.setEnabled(enabled) }
+        }
+        root.addView(automaticUpdates)
         items = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(ScrollView(this).apply { addView(items) }, LinearLayout.LayoutParams(-1, 0, 1f))
         download = Button(this).apply {
@@ -98,6 +107,21 @@ class MainActivity : Activity() {
             textSize = 12f
         })
         acceptShare(intent)
+        if (engineUpdates.due()) {
+            begin("Vérification du moteur…", 100, Stage.UPDATE, initialize = false) { _, token ->
+                extractor.init()
+                if (token.get()) throw InterruptedException()
+                try {
+                    val result = engineUpdates.check(token)
+                    if (token.get()) throw InterruptedException()
+                    ui { status.text = "$result Collez un lien pour commencer." }
+                } catch (error: Exception) {
+                    if (token.get()) throw error
+                    val reason = Diagnostics.describe(Stage.UPDATE, error)
+                    ui { status.text = "$reason\nLe moteur existant est conservé. Vous pouvez analyser un lien." }
+                }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); acceptShare(intent) }
@@ -116,6 +140,7 @@ class MainActivity : Activity() {
         cancelled = token; operation = id
         analyze.isEnabled = false; download.isEnabled = false; link.isEnabled = false; cancel.isEnabled = true
         updateEngine.isEnabled = false
+        automaticUpdates.isEnabled = false
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         status.text = message
         val deadline = timer.schedule({
@@ -138,6 +163,7 @@ class MainActivity : Activity() {
                     busy = false; operation = null
                     analyze.isEnabled = true; link.isEnabled = true; cancel.isEnabled = false
                     updateEngine.isEnabled = true
+                    automaticUpdates.isEnabled = true
                     download.isEnabled = selected.isNotEmpty()
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }

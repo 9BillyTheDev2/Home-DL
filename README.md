@@ -4,7 +4,7 @@ Prototype Android personnel pour analyser un lien et télécharger les vidéos a
 
 ## État
 
-Code initial préparé. Compilation et exécution Android non encore validées. Ce prototype ne doit pas être présenté comme compatible avec toutes les plateformes. Photos et carrousels photo non implémentés ; une miniature n’est pas une photo téléchargeable.
+Premier prototype compilé et ouvert sur téléphone ; analyse Instagram en échec, cause à préciser. Version 0.1.2 avec diagnostic et mise à jour moteur préparée, à compiler et tester. Ce prototype ne doit pas être présenté comme compatible avec toutes les plateformes. Photos et carrousels photo non implémentés ; une miniature n’est pas une photo téléchargeable.
 
 ## Prototype 0.1
 
@@ -15,6 +15,8 @@ Code initial préparé. Compilation et exécution Android non encore validées. 
 - Téléchargement temporaire privé puis publication dans Téléchargements/Home-DL.
 - Annulation et délais bornés ; garder l’application au premier plan pour ce prototype.
 - Aucun serveur Home-DL, cookie, suivi publicitaire ou historique de liens ajouté.
+- Moteur stable vérifié automatiquement à l’ouverture, au plus une fois par 24 h après succès ; désactivable.
+- Mise à jour APK intégrée non activée : signature et distribution à définir.
 
 ## Construire l’APK
 
@@ -31,3 +33,5 @@ Aucun nom personnel, courriel, clé, cookie, média ou lien privé ne doit être
 Les noms des projets tiers sont conservés pour leurs crédits. GitHub affiche séparément le compte propriétaire et l’auteur des commits ; cela ne fait pas partie des fichiers de l’application.
 
 Voir ROADMAP.md, docs/TESTS.md et THIRD_PARTY.md.
+
+Voir docs/UPDATES.md pour le fonctionnement et les limites des mises à jour.

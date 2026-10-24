@@ -7,7 +7,7 @@ import com.yausername.ffmpeg.FFmpeg
 import java.io.File
 
 class Extractor(private val context: Context) {
-    fun init() { YoutubeDL.init(context); FFmpeg.init(context) }
+    fun init() { EngineUpdates(context).recover(); YoutubeDL.init(context); FFmpeg.init(context) }
 
     private fun request(url: String): YoutubeDLRequest =
         YoutubeDLRequest(url).addOption("--ignore-config")
@@ -32,9 +32,6 @@ class Extractor(private val context: Context) {
         val files = directory.listFiles()?.filter { it.isFile && it.extension !in setOf("part", "ytdl", "json") }.orEmpty()
         require(files.size == 1 && files.first().length() > 0) { "Fichier final introuvable." }
         return files.first()
-    }
-    fun update() {
-        YoutubeDL.updateYoutubeDL(context, YoutubeDL.UpdateChannel.STABLE)
     }
     fun cancel(id: String) { YoutubeDL.destroyProcessById(id) }
 }

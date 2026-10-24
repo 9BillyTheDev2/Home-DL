@@ -6,9 +6,24 @@ android {
         applicationId = "app.homedl"
         minSdk = 29
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1-diagnostic"
+        versionCode = 3
+        versionName = "0.1.2-engine-updates"
         ndk { abiFilters += "arm64-v8a" }
+    }
+    signingConfigs {
+        if (!System.getenv("HOME_DL_KEYSTORE").isNullOrBlank()) {
+            create("permanent") {
+                storeFile = file(System.getenv("HOME_DL_KEYSTORE"))
+                storePassword = System.getenv("HOME_DL_STORE_PASSWORD")
+                keyAlias = System.getenv("HOME_DL_KEY_ALIAS")
+                keyPassword = System.getenv("HOME_DL_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            signingConfigs.findByName("permanent")?.let { signingConfig = it }
+        }
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
