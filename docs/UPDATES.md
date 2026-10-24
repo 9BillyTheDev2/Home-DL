@@ -8,7 +8,7 @@ Source : https://github.com/9BillyTheDev2/Home-DL/releases/latest/download/updat
 
 Contrôles : HTTPS et hôtes GitHub autorisés à chaque redirection, manifeste 32 Kio maximum, APK 150 Mio maximum et taille exacte, SHA-256, package app.homedl, code de version supérieur correspondant au manifeste, certificat de signature identique à l’app installée. Un APK d’une autre signature est refusé. Installation par FileProvider limité au dossier privé de mise à jour. L’installeur Android conserve son contrôle et sa confirmation.
 
-## Signature et première transition — restant à configurer
+## Signature permanente et première installation
 
 Les APK 0.1.x sont des builds debug avec signature temporaire. Le chemin intégré ne peut pas les transformer en une application signée par une autre clé. Une première installation manuelle de la version permanente reste nécessaire ; si Android refuse la signature différente, il faudra désinstaller la version de test, ce qui effacera ses réglages (les médias enregistrés dans Téléchargements restent des fichiers partagés). Ne rien désinstaller tant que la release permanente n’est pas prête.
 
