@@ -6,6 +6,15 @@ import org.json.JSONObject
 data class Media(val source: String, val index: Int?, val title: String, val preview: String?, val quality: String)
 
 object Links {
+    fun platform(text: String): String {
+        val host = runCatching { URI(parse(text)).host.lowercase() }.getOrDefault("")
+        return when {
+            host == "instagram.com" || host.endsWith(".instagram.com") -> "Instagram"
+            host == "tiktok.com" || host.endsWith(".tiktok.com") -> "TikTok"
+            host == "x.com" || host.endsWith(".x.com") || host == "twitter.com" || host.endsWith(".twitter.com") -> "X"
+            else -> "autre"
+        }
+    }
     fun parse(text: String): String {
         val match = Regex("https://[^\\s<>]+").find(text)?.value
             ?: throw IllegalArgumentException("Collez un lien HTTPS.")

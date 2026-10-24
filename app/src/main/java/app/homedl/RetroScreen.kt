@@ -28,6 +28,8 @@ class RetroScreen(private val activity: Activity) {
     }
     val link = EditText(activity)
     val analyze = Button(activity)
+    val clearLink = Button(activity)
+    val diagnostic = Button(activity)
     val status = TextView(activity)
     val updateEngine = Button(activity)
     val automaticUpdates = Switch(activity)
@@ -81,6 +83,9 @@ class RetroScreen(private val activity: Activity) {
         link.apply {
             hint = "https://…"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+            setSingleLine(false)
+            setHorizontallyScrolling(false)
+            gravity = Gravity.TOP or Gravity.START
             maxLines = 3
             minHeight = dp(56)
             textSize = 15f
@@ -91,7 +96,17 @@ class RetroScreen(private val activity: Activity) {
             backgroundTintList = null
             setPadding(dp(12), dp(12), dp(12), dp(12))
         }
-        source.addView(link, spaced(-1, -2, 12, 10))
+        val linkRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        linkRow.addView(link, LinearLayout.LayoutParams(0, -2, 1f))
+        decorateButton(clearLink, "×", false)
+        clearLink.contentDescription = "Effacer le lien et les résultats"
+        clearLink.textSize = 28f
+        clearLink.setTextColor(Color.rgb(255, 121, 132))
+        linkRow.addView(clearLink, LinearLayout.LayoutParams(dp(48), dp(56)).apply { leftMargin = dp(8) })
+        source.addView(linkRow, spaced(-1, -2, 12, 10))
         decorateButton(analyze, "Analyser le lien", true)
         source.addView(analyze, LinearLayout.LayoutParams(-1, dp(52)))
 
@@ -113,6 +128,9 @@ class RetroScreen(private val activity: Activity) {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         feedback.addView(status)
+        decorateButton(diagnostic, "Voir / copier le diagnostic", false)
+        diagnostic.visibility = View.GONE
+        feedback.addView(diagnostic, spaced(-1, dp(48), 10, 0))
         content.addView(feedback, spaced(-1, -2, 0, 16))
 
         val settingsToggle = Button(activity)
@@ -198,6 +216,8 @@ class RetroScreen(private val activity: Activity) {
         })
         root.addView(actions)
     }
+
+    fun showFailure() { phase.text = "OPÉRATION INTERROMPUE"; phase.setTextColor(ORANGE) }
 
     fun setBusy(value: Boolean) {
         phase.text = if (value) "FLUX EN COURS" else "EN ATTENTE"

@@ -6,8 +6,8 @@ android {
         applicationId = "app.homedl"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.1.3-retro-future"
+        versionCode = 5
+        versionName = "0.1.4-diagnostics"
         ndk { abiFilters += "arm64-v8a" }
     }
     signingConfigs {
@@ -30,6 +30,7 @@ android {
     packaging { jniLibs { useLegacyPackaging = true } }
 }
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
     implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1")
 }

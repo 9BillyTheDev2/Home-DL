@@ -18,7 +18,9 @@ class Extractor(private val context: Context) {
     fun analyze(url: String, id: String): List<Media> {
         val req = request(url).addOption("--dump-single-json")
             .addOption("--skip-download").addOption("--no-flat-playlist")
-        return MediaParser.parse(url, YoutubeDL.execute(req, id, null).out)
+        val output = YoutubeDL.execute(req, id, null).out
+        return try { MediaParser.parse(url, output) }
+        catch (_: org.json.JSONException) { throw EngineOutputException(output.length) }
     }
 
     fun download(media: Media, directory: File, id: String, progress: (Float) -> Unit): File {

@@ -64,3 +64,9 @@ Tous ces cas restent à tester sur appareil ; la lecture du code ne vaut pas val
 Compilation assembleDebug et lintDebug réussis sur GitHub Actions pour le thème rétro-futuriste. Artefact APK ARM64 produit. Contrastes calculés : texte principal 16,4:1 ; texte secondaire 8,7:1 ; bouton vert 15,6:1 ; bouton cyan 13,5:1 ; orange sur panneau 10,1:1. XML du thème et manifeste parsés sans erreur. Aucune nouvelle dépendance graphique ou police distante.
 
 À vérifier sur téléphone : marges système, clavier et défilement sur petit écran ; grandes polices ; ouverture des réglages ; activation/désactivation de la pluie de code ; arrêt de l’animation en arrière-plan ; états des boutons pendant analyse/annulation ; lisibilité des cartes médias réelles. Aucun rendu Android sur appareil ou émulateur n’a été observé pour cette version. Le thème n’atteste pas la réussite de l’extraction Instagram ni de la signature permanente.
+
+## Vérifications 0.1.4
+
+Tests automatisés ajoutés : aide cookies sans faux AUTH ; priorité HTTP 403 ; accès ambigu ; distinction AUTH/429 ; erreur de dépendance moteur ; masquage de secrets/adresses/liens/chemins ; réponse JSON sans métadonnées ; longueur bornée. Workflow : testDebugUnitTest, assembleDebug et lintDebug.
+
+À vérifier sur téléphone : croix rouge efface le lien, les résultats et le diagnostic ; croix désactivée pendant une opération ; lien sur plusieurs lignes ; affichage des détails après échec ; copie volontaire du diagnostic ; nouvelle analyse efface le diagnostic précédent. Le masquage automatique ne garantit pas l’absence de tout renseignement dans une erreur inconnue : le texte est présenté pour relecture avant copie. Aucun journal n’est transmis automatiquement.

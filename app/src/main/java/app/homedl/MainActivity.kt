@@ -32,6 +32,8 @@ class MainActivity : Activity() {
     private lateinit var engineUpdates: EngineUpdates
     private lateinit var automaticUpdates: Switch
     private val selected = linkedSetOf<Media>()
+    private var lastDiagnostic: String? = null
+    private var failed = false
     @Volatile private var busy = false
     @Volatile private var operation: String? = null
     private var cancelled = AtomicBoolean(false)
@@ -68,6 +70,21 @@ class MainActivity : Activity() {
         }
         root.requestApplyInsets()
         analyze.setOnClickListener { analyzeLink() }
+        screen.clearLink.setOnClickListener {
+            if (!busy) {
+                link.text.clear()
+                items.removeAllViews()
+                selected.clear()
+                lastDiagnostic = null
+                screen.diagnostic.visibility = View.GONE
+                screen.setMediaCount(0)
+                screen.setBusy(false)
+                download.isEnabled = false
+                status.text = "Lien effacé. Prêt pour une nouvelle analyse."
+                link.requestFocus()
+            }
+        }
+        screen.diagnostic.setOnClickListener { showDiagnostic() }
         download.setOnClickListener { downloadSelected() }
         cancel.setOnClickListener {
             cancelled.set(true)
@@ -97,7 +114,12 @@ class MainActivity : Activity() {
                 } catch (error: Exception) {
                     if (token.get()) throw error
                     val reason = Diagnostics.describe(Stage.UPDATE, error)
-                    ui { status.text = "$reason\nLe moteur existant est conservé. Vous pouvez analyser un lien." }
+                    val report = Diagnostics.report(Stage.UPDATE, error, appVersion(), engineUpdates.version(), "moteur")
+                    ui {
+                        lastDiagnostic = report
+                        screen.diagnostic.visibility = View.VISIBLE
+                        status.text = "$reason\nLe moteur existant est conservé. Vous pouvez analyser un lien."
+                    }
                 }
             }
         }
@@ -108,12 +130,44 @@ class MainActivity : Activity() {
         if (intent?.action == Intent.ACTION_SEND && !busy) link.setText(intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty())
     }
 
+    @Suppress("DEPRECATION")
+    private fun appVersion(): String = packageManager.getPackageInfo(packageName, 0).versionName ?: "inconnue"
+
+    private fun showDiagnostic() {
+        val report = lastDiagnostic ?: return
+        val body = TextView(this).apply {
+            text = report
+            textSize = 13f
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            setTextIsSelectable(true)
+        }
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Diagnostic local")
+            .setView(ScrollView(this).apply { addView(body) })
+            .setPositiveButton("Copier") { _, _ ->
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Diagnostic Home-DL", report)
+                clip.description.extras = android.os.PersistableBundle().apply {
+                    putBoolean("android.content.extra.IS_SENSITIVE", true)
+                }
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, "Diagnostic copié. Vous pouvez le coller dans la conversation.", Toast.LENGTH_LONG).show()
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
+    }
+
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
 
     private fun begin(message: String, timeoutSeconds: Long, stage: Stage,
                       initialize: Boolean = true, action: (String, AtomicBoolean) -> Unit) {
         if (busy) return
         busy = true
+        failed = false
+        lastDiagnostic = null
+        screen.diagnostic.visibility = View.GONE
+        screen.clearLink.isEnabled = false
+        val platform = Links.platform(link.text.toString())
         screen.setBusy(true)
         val id = UUID.randomUUID().toString()
         val token = AtomicBoolean(false)
@@ -136,12 +190,22 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
                 val diagnostic = if (token.get()) "STOP • Opération arrêtée (annulation ou délai dépassé)."
                     else Diagnostics.describe(currentStage, e)
-                ui { status.text = diagnostic }
+                val report = if (token.get()) null else Diagnostics.report(
+                    currentStage, e, appVersion(), engineUpdates.version(), platform
+                )
+                ui {
+                    failed = !token.get()
+                    lastDiagnostic = report
+                    screen.diagnostic.visibility = if (report == null) View.GONE else View.VISIBLE
+                    status.text = diagnostic
+                }
             } finally {
                 deadline.cancel(false)
                 ui {
                     busy = false; operation = null
                     screen.setBusy(false)
+                    if (failed) screen.showFailure()
+                    screen.clearLink.isEnabled = true
                     analyze.isEnabled = true; link.isEnabled = true; cancel.isEnabled = false
                     updateEngine.isEnabled = true
                     automaticUpdates.isEnabled = true
@@ -154,6 +218,7 @@ class MainActivity : Activity() {
 
     private fun analyzeLink() {
         val url = try { Links.parse(link.text.toString()) } catch (e: Exception) { status.text = e.message; return }
+        link.setSelection(0)
         items.removeAllViews(); selected.clear(); screen.setMediaCount(0)
         begin("Analyse en cours…", 120, Stage.ANALYZE) { id, token ->
             val found = extractor.analyze(url, id)

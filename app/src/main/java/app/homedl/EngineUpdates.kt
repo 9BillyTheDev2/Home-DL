@@ -22,6 +22,8 @@ class EngineUpdates(private val context: Context) {
         }
     }
 
+    fun version(): String = prefs.getString("version", null) ?: "embarqué / bibliothèque 0.18.1"
+
     fun enabled(): Boolean = prefs.getBoolean("automatic", true)
     fun setEnabled(value: Boolean) { prefs.edit().putBoolean("automatic", value).apply() }
 

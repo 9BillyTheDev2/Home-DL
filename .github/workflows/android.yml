@@ -33,7 +33,7 @@ jobs:
           gradle-version: '8.9'
       - name: Compiler le prototype
         if: inputs.package == 'debug'
-        run: gradle :app:assembleDebug :app:lintDebug --no-daemon
+        run: gradle :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon
       - name: Compiler avec la signature permanente
         if: inputs.package == 'signed-release'
         env:
@@ -51,7 +51,7 @@ jobs:
           export HOME_DL_KEYSTORE="$RUNNER_TEMP/home-dl-signing.jks"
           trap 'rm -f "$HOME_DL_KEYSTORE"' EXIT
           printf '%s' "$HOME_DL_KEYSTORE_BASE64" | base64 --decode > "$HOME_DL_KEYSTORE"
-          gradle :app:assembleRelease :app:lintRelease --no-daemon
+          gradle :app:testDebugUnitTest :app:assembleRelease :app:lintRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: Home-DL-prototype-arm64
