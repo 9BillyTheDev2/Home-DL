@@ -2,7 +2,7 @@
 
 Mis à jour le 24 octobre 2026.
 
-**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente configurée et v0.2.0 publiée ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
+**État actuel :** v0.2.1 signée et publiée, compatible avec la signature de v0.2.0. Compilation, tests et lint réussis. Quatre photos 1440 × 1920 et une vidéo téléchargées avec le code Kotlin hors téléphone. Le refus utilisateur sur 0.2.0 n’a pas été reproduit dans cet environnement ; résultat de la correction et parcours de mise à jour sur téléphone encore attendus.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -138,10 +138,12 @@ Clé RSA 3072 bits, PKCS12, certificat CN=Home-DL sans renseignement personnel. 
 
 v0.2.0 publiée avec Home-DL.apk et update.json dans le même dépôt. Route latest/download/update.json vérifiée après publication ; versionCode 7, versionName 0.2.0, URL et taille cohérentes, SHA-256 vérifié sur les octets réellement téléchargés. Publication et contrôles terminés ; première installation manuelle puis futur parcours de mise à jour/conservation des réglages à vérifier sur téléphone. Le test de téléchargement Instagram public est confirmé sur JVM ; photos/carrousels et MediaStore restent à valider sur appareil. Pas de mise à jour silencieuse : Android conserve la confirmation d’installation.
 
-## En préparation — 0.2.1, carrousel Instagram et erreurs de requête
+## Suivi — 0.2.1, carrousel Instagram et erreurs de requête
 
 Un essai utilisateur 0.2.0 a échoué avec une réponse publique vide, classée UNKNOWN. Sur le lien transmis (non conservé dans le dépôt), les deux requêtes testées depuis l’environnement de développement rendent un carrousel de quatre photos. Cela ne reproduit pas le refus sur le téléphone ; la cause réseau/serveur précise reste inconnue. La page HTML publique testée n’expose pas ces médias : aucune extraction HTML spéculative ajoutée.
 
 Correction des limites confirmées : requête publique par shortcode utilisée par Instaloader en première intention, requête Polaris en alternative au maximum une fois si la réponse est vide ou signale une erreur de requête. Arrêt immédiat sur limitation ou accès explicitement refusé. Vérification que les données correspondent au post demandé. Les erreurs portent désormais des codes Instagram dédiés et un résumé technique sans texte serveur, lien, auteur ni cookie.
 
-Code Kotlin de production compilé et testé localement sur le lien exact avec le routage réseau standard de l’environnement : quatre photos téléchargées et formats vérifiés, 1440 × 1920, tailles 403184 / 383260 / 248864 / 268766 octets. Les fichiers d’image n’ont pas été conservés. Source et réponses de l’utilisateur uniquement dans les fichiers temporaires locaux, jamais dans les tests ou journaux GitHub publics. Compilation Android, tests et publication 0.2.1 à exécuter. Première mise à jour via l’app et confirmation du résultat sur téléphone restent à valider.
+Code Kotlin de production compilé et testé localement sur le lien exact avec le routage réseau standard de l’environnement : quatre photos téléchargées et formats vérifiés, 1440 × 1920, tailles 403184 / 383260 / 248864 / 268766 octets. Les fichiers d’image n’ont pas été conservés. Source et réponses de l’utilisateur uniquement dans les fichiers temporaires locaux, jamais dans les tests ou journaux GitHub publics. Exécution 40136132751 réussie sur df1fa4ab5b632d31fad30c732ac4a1686df33db8 : tests JVM, assembleRelease et lintRelease, vérification de signature et publication v0.2.1. La vidéo de régression publique a également été téléchargée avec le même code Kotlin (918120 octets, MP4 vérifié). Première mise à jour via l’app et confirmation du résultat sur téléphone restent à valider.
+
+Après publication 0.2.1 : route de mise à jour de l’app accessible, versionCode 8, APK de 65 048 088 octets, SHA-256 dab50262f2d38059c628a850adb02df29f7c21d78596d76b24c2dc9842210061 vérifié. Signature v2 validée avec apksig 8.7.3, certificat permanent identique à celui de 0.2.0. Aucun lien utilisateur dans le code, les tests, les notes de release ou les journaux Actions. Les réponses temporaires de la publication ont été supprimées.
