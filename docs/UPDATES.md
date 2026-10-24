@@ -23,3 +23,7 @@ Il faut encore : configurer et sauvegarder la signature ; publier la première r
 ## Moteur yt-dlp
 
 Le moteur officiel 2026.10.21 est intégré avec SHA-256 épinglé (scripts/prepare_engine.py avant Gradle). Une version locale plus récente est conservée. Vérification stable officielle github.com, sans dépendance à api.github.com : 24 h entre succès, 6 h après échec ; commande manuelle et interrupteur. Somme SHA2-256SUMS, HTTPS, taille et remplacement atomique contrôlés. Un échec conserve le moteur existant. Pas de restauration automatique après une incompatibilité fonctionnelle. Interface, Python et FFmpeg nécessitent une mise à jour APK. Aucun lien de média envoyé pour vérifier les mises à jour.
+
+## Validation du code
+
+Compilation, lint et tests JVM réussis dans l’exécution 40126888285. Les contrôles de package/version/certificat sont couverts par tests. La vérification Android d’APK et le parcours complet entre deux versions signées restent à essayer après configuration des secrets. La page GitHub des secrets a été consultée : aucun secret de dépôt ou d’environnement à cette date. Aucune clé générée ou enregistrée par cette étape.

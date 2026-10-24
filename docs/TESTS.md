@@ -85,3 +85,14 @@ Résultat de validation 0.1.4 : testDebugUnitTest, assembleDebug et lintDebug r�
 À vérifier sur téléphone : diagnostic moteur 2026.10.21 même si la vérification réseau échoue ; contrôle manuel sans api.github.com ; vidéo publique directe avec aperçu, sélection et copie dans Téléchargements/Home-DL ; vidéo publique de chaque plateforme séparément. Photos/carrousels et mises à jour APK non implémentés.
 
 Résultat GitHub Actions : exécution 40113703258 réussie sur le commit 207ef46410d3c452c3be3621d99737e949aebc6e ; vérification de l’actif, douze tests unitaires, assembleDebug et lintDebug terminés sans échec. Artefact APK ARM64 produit. Aucun succès Instagram/TikTok/X ou Android/MediaStore n’en est déduit.
+
+
+## Vérifications 0.2.0
+
+Exécution 40126888285 réussie sur aa5a45f2a82fa6f993c2f56071f1fef5f5d1c8ca : testDebugUnitTest, assembleDebug, lintDebug et probePublicInstagram. 29 tests JVM au total dans les sources : diagnostics, sommes, liens Instagram/hostnames, sélection de variantes et ordre du carrousel, refus d’une couverture vidéo seule, formats réels, manifeste d’APK et identité de signature/version/package. La sélection photo/carrousel utilise des réponses synthétiques, pas une validation réseau de ces formats.
+
+Essai réseau du code Kotlin de production : session anonyme, analyse d’une vidéo publique issue des fixtures yt-dlp, puis téléchargement CDN d’un MP4 de 918 120 octets et validation du format. Aucun compte ni service de téléchargement tiers ; aucun lien fourni par l’utilisateur dans le test public. Ce test est distinct du téléchargement W3C réalisé précédemment avec yt-dlp.
+
+La commande probePublicInstagram signale explicitement PUBLIC_INSTAGRAM_PASS ou PUBLIC_INSTAGRAM_UNCONFIRMED ; son état Gradle ne suffit pas à conclure, car l’échec d’un service externe ne doit pas rendre une compilation non déterministe. Les journaux de cette exécution contiennent PUBLIC_INSTAGRAM_PASS.
+
+Restent à vérifier sur Android : session anonyme et réseau du téléphone, vrais photos/carrousels/publications mixtes, aperçu et sélection, enregistrement MediaStore, audio/qualité, annulation. Pour l’APK : installer une première version signée durablement, publier une version supérieure de même certificat, vérifier détection/téléchargement/permission d’installation/confirmation/conservation des réglages, puis refus d’un autre certificat et d’une version ancienne. Les tests JVM vérifient la politique de confiance ; ils ne remplacent pas ce parcours système. Aucun secret de signature configuré, aucune release publiée pendant cette étape.

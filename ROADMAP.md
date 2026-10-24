@@ -2,6 +2,8 @@
 
 Mis à jour le 24 octobre 2026.
 
+**État actuel :** code 0.2.0 compilé, tests/lint réussis et téléchargement réel Instagram public confirmé sur JVM. Signature permanente et première publication encore à configurer ; ne pas demander d’installation du build debug pour cette transition. Les mises à jour APK et MediaStore ne sont pas encore validés sur téléphone.
+
 ## Dernière version testée — moteur et accès (0.1.5)
 
 Captures reçues : la vérification moteur échoue avec UnknownHostException sur api.github.com ; l’analyse Instagram renvoie plusieurs hypothèses (contenu absent, limitation, connexion). Aucun téléchargement Instagram validé. Le lien de publication présenté ne permet pas de conclure que le média est une vidéo ; photos/carrousels restent non implémentés.
@@ -122,7 +124,7 @@ Comparaison des méthodes existantes et test réel d’une requête Instagram pu
 
 ## En préparation — 0.2.0, Instagram public et mises à jour APK
 
-Adaptateur Instagram anonyme intégré au code : liens de publications/reels/TV publics, session technique en mémoire, contrôle d’accès puis requête dédiée, photos/vidéos/carrousels ordonnés et meilleure variante directe par dimensions. Les couvertures vidéo ne deviennent pas des photos de substitution. Téléchargement direct CDN borné et vérification du format avant MediaStore ; URLs privées non conservées dans le dépôt. Les autres sites conservent yt-dlp. Compilation et essai de ce nouveau code restent à confirmer. Qualité : meilleure variante progressive exposée ; pas de sélection DASH spécifique dans cet adaptateur.
+Adaptateur Instagram anonyme intégré au code : liens de publications/reels/TV publics, session technique en mémoire, contrôle d’accès puis requête dédiée, photos/vidéos/carrousels ordonnés et meilleure variante directe par dimensions. Les couvertures vidéo ne deviennent pas des photos de substitution. Téléchargement direct CDN borné et vérification du format avant MediaStore ; URLs privées non conservées dans le dépôt. Les autres sites conservent yt-dlp. Compilation Android, lint et tests JVM réussis sur le commit aa5a45f2a82fa6f993c2f56071f1fef5f5d1c8ca (exécution 40126888285). Le même adaptateur Kotlin a analysé et téléchargé un MP4 Instagram public de 918 120 octets sans compte lors de l’essai JVM. Photos/carrousels vérifiés par tests de parsing synthétiques ; essais Android restant à effectuer. Qualité : meilleure variante progressive exposée ; pas de sélection DASH spécifique dans cet adaptateur.
 
 Code de mise à jour APK ajouté : recherche automatique à l’ouverture (6 h entre tentatives), bouton de vérification, annonce d’une version disponible, téléchargement après choix utilisateur, contrôle SHA-256/package/version/certificat identique, puis confirmation Android. Source unique : releases publiques de ce dépôt. Interrupteur pour la recherche automatique. Le moteur garde son propre mécanisme.
 
