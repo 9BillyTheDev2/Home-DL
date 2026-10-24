@@ -58,3 +58,9 @@ Application au premier plan uniquement ; pas de service de téléchargement pers
 - Aucune mise à jour APK ne doit être annoncée comme disponible par cette version.
 
 Tous ces cas restent à tester sur appareil ; la lecture du code ne vaut pas validation fonctionnelle.
+
+## Vérifications visuelles 0.1.3
+
+Compilation assembleDebug et lintDebug réussis sur GitHub Actions pour le thème rétro-futuriste. Artefact APK ARM64 produit. Contrastes calculés : texte principal 16,4:1 ; texte secondaire 8,7:1 ; bouton vert 15,6:1 ; bouton cyan 13,5:1 ; orange sur panneau 10,1:1. XML du thème et manifeste parsés sans erreur. Aucune nouvelle dépendance graphique ou police distante.
+
+À vérifier sur téléphone : marges système, clavier et défilement sur petit écran ; grandes polices ; ouverture des réglages ; activation/désactivation de la pluie de code ; arrêt de l’animation en arrière-plan ; états des boutons pendant analyse/annulation ; lisibilité des cartes médias réelles. Aucun rendu Android sur appareil ou émulateur n’a été observé pour cette version. Le thème n’atteste pas la réussite de l’extraction Instagram ni de la signature permanente.
