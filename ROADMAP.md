@@ -87,3 +87,7 @@ Compilation signée préparée dans Gradle et dans le workflow manuel : option d
 ## Suivi — préparation du dépôt public unique
 
 Choix validé : conserver Home-DL comme dépôt unique et le rendre public. Audit des sept commits et des trente-cinq versions de fichiers ; mention personnelle ancienne remplacée dans l’historique principal en conservant les étapes du projet. Voir docs/PRIVACY_REVIEW.md pour le périmètre et les limites des objets GitHub conservés hors branche. Le compte propriétaire reste visible. Changement de visibilité non disponible via la connexion utilisée ; à effectuer dans Settings. Signature permanente, publication de release et installation des mises à jour APK restent à finaliser.
+
+## Suivi — visibilité publique confirmée
+
+Le propriétaire a changé la visibilité ; vérification des métadonnées GitHub : dépôt public. Distribution prévue dans ce même dépôt. Signature permanente non configurée, aucune release APK publiée par cette étape et mise à jour APK intégrée non implémentée. La compilation signée est préparée mais les quatre secrets requis restent à renseigner via les paramètres GitHub, opération non disponible dans la connexion utilisée.
