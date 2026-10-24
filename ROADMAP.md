@@ -15,10 +15,10 @@ Aucun filigrane ajouté par Home-DL. Privilégier un fichier sans filigrane lors
 - [x] Références identifiées : Seal, YTDLnis, yt-dlp Android, gallery-dl.
 - [ ] Audit du code et des licences des composants retenus.
 - [ ] Choix technique confirmé par compilation et extraction réelle.
-- [ ] Application Android implémentée.
+- [x] Code initial du prototype vidéo Android préparé (non validé sur appareil).
 - [ ] APK compilée et testée sur téléphone.
 
-Aucun moteur intégré, aucun téléchargement validé et aucune APK produite à ce stade.
+Moteur vidéo référencé dans le prototype Kotlin. Compilation, téléchargements réels et installation sur appareil non validés. Aucune APK produite à ce stade. Voir docs/TESTS.md.
 
 ## Lot 1 — Faisabilité technique
 
@@ -63,3 +63,7 @@ Critère de sortie : APK installable et extraction réelle documentée. Une mini
 - MediaStoreWriter : finalisation du fichier dans le stockage Android.
 
 Les médias et les liens restent traités sur le téléphone. GitHub sert au code, au suivi et à la compilation, pas de relais de téléchargement.
+
+## Suivi — prototype 0.1
+
+Structure Kotlin, analyse vidéo, aperçus, sélection, téléchargement temporaire, copie MediaStore et annulation préparés. Workflow de compilation manuel ajouté, sans déclenchement automatique. Photos/carrousels restent à implémenter ; aucun test réel ne doit être marqué réussi avant vérification. Données personnelles retirées des fichiers courants.
