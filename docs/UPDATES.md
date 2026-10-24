@@ -16,22 +16,20 @@ Seul le programme Python yt-dlp est actualisé. L’interface, Python, FFmpeg et
 
 L’opération se déroule au premier plan et partage la file d’exécution avec les téléchargements ; aucune extraction ne se déroule pendant un remplacement. Un premier téléchargement moteur peut retarder l’accès aux boutons. Les lectures réseau ont des délais de 10 secondes et l’opération vérifie une limite globale de 90 secondes entre ses étapes ; une lecture déjà bloquée peut prendre quelques secondes supplémentaires. Une annulation empêche le remplacement tant que celui-ci n’est pas finalisé.
 
-## Application APK — non activé
+## Application APK — dépôt unique public validé
 
-Le dépôt source est privé. Sans compte utilisateur ou jeton dans l’application, une APK publiée uniquement dans ce dépôt privé n’est pas accessible à un système de mise à jour intégré.
+Le propriétaire a validé le principe d’un dépôt Home-DL unique public pour le code et les APK. Aucun dépôt de distribution séparé n’est nécessaire. Le changement de visibilité reste à effectuer dans GitHub après le contrôle des fichiers et de l’historique. L’application pourra ensuite consulter les versions publiques sans clé GitHub.
 
-Solution proposée à valider : dépôt public séparé de distribution, contenant seulement les APK signées et les informations de version. Le code peut rester privé, sous réserve des obligations des composants en cas de distribution. Ne pas y placer de données personnelles. Ne pas rendre le dépôt actuel public sans instruction explicite.
-
-Avant activation :
-1. Définir la destination de distribution et obtenir l’accord du propriétaire si elle est publique.
+La mise à jour de l’APK n’est pas encore implémentée ni activée. Étapes restantes :
+1. Passer le dépôt en public dans ses paramètres GitHub.
 2. Créer une clé de signature permanente et la sauvegarder hors du dépôt.
 3. Configurer les secrets de compilation ; ne jamais mettre la clé ou son mot de passe dans les sources.
-4. Signer toutes les versions avec cette clé ; incrémenter versionCode.
+4. Signer les versions avec cette clé et publier une release dans ce même dépôt.
 5. Implémenter la détection de version et l’installeur Android avec confirmation système.
 6. Vérifier l’identité du package, la version et le certificat de signature avant de proposer l’installation.
 7. Tester une mise à jour qui conserve les données et le rejet d’une APK signée avec une autre clé.
 
-Aucune clé générée, aucun dépôt public créé et aucun mécanisme APK activé à cette étape. Les APK de test gardent leur signature temporaire et peuvent nécessiter une désinstallation. Une notification de mise à jour APK ne doit pas être annoncée comme opérationnelle.
+Aucune clé générée, aucune publication APK et aucun mécanisme de mise à jour APK activé à cette étape. Les APK de test gardent leur signature temporaire et peuvent nécessiter une désinstallation. Une notification de mise à jour APK ne doit pas être annoncée comme opérationnelle.
 
 ## Compilation signée préparée
 

@@ -80,6 +80,10 @@ Premier essai sur téléphone : application ouverte, analyse Instagram échouée
 
 Code de mise à jour automatique du moteur préparé : vérification à l’ouverture, 24 h entre succès, 6 h après échec, interrupteur et contrôle manuel ; HTTPS, origine, taille et SHA-256 vérifiés, remplacement atomique. Aucun lien saisi transmis lors de cette vérification. Compilation et tests appareil de cette version restent à exécuter. Le moteur existant est conservé si la vérification ou le téléchargement échoue.
 
-Mises à jour APK non activées : signature permanente et destination de distribution encore à définir. Le dépôt privé reste privé. Proposition concrète dans docs/UPDATES.md : distribution via un dépôt public distinct après validation. Aucun secret créé ou ajouté.
+Mises à jour APK non activées : signature permanente et destination de distribution encore à définir. Le propriétaire a ensuite validé un dépôt unique public pour le code et les APK ; voir docs/UPDATES.md. Le changement de visibilité reste à effectuer. Aucun secret créé ou ajouté.
 
 Compilation signée préparée dans Gradle et dans le workflow manuel : option debug conservée, option signed-release conditionnée à quatre secrets. Aucune signature permanente configurée et aucune publication exécutée.
+
+## Suivi — préparation du dépôt public unique
+
+Choix validé : conserver Home-DL comme dépôt unique et le rendre public. Audit des sept commits et des trente-cinq versions de fichiers ; mention personnelle ancienne remplacée dans l’historique principal en conservant les étapes du projet. Voir docs/PRIVACY_REVIEW.md pour le périmètre et les limites des objets GitHub conservés hors branche. Le compte propriétaire reste visible. Changement de visibilité non disponible via la connexion utilisée ; à effectuer dans Settings. Signature permanente, publication de release et installation des mises à jour APK restent à finaliser.
