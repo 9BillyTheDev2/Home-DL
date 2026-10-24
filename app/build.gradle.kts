@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
     namespace = "app.homedl"
@@ -40,7 +42,7 @@ val verifyEngineAsset by tasks.registering {
     doLast {
         val asset = file("src/main/assets/engine/yt-dlp")
         check(asset.isFile) { "Run python3 scripts/prepare_engine.py from the repository root first." }
-        val actual = java.security.MessageDigest.getInstance("SHA-256").digest(asset.readBytes())
+        val actual = MessageDigest.getInstance("SHA-256").digest(asset.readBytes())
             .joinToString("") { "%02x".format(it.toInt() and 255) }
         check(actual == "b7af77f686e95f7845ce8d09d21957718febb8b48b30555adb9dd2292ad7bf14") {
             "Bundled engine checksum mismatch"

@@ -72,3 +72,14 @@ Tests automatisés ajoutés : aide cookies sans faux AUTH ; priorité HTTP 403 ;
 À vérifier sur téléphone : croix rouge efface le lien, les résultats et le diagnostic ; croix désactivée pendant une opération ; lien sur plusieurs lignes ; affichage des détails après échec ; copie volontaire du diagnostic ; nouvelle analyse efface le diagnostic précédent. Le masquage automatique ne garantit pas l’absence de tout renseignement dans une erreur inconnue : le texte est présenté pour relecture avant copie. Aucun journal n’est transmis automatiquement.
 
 Résultat de validation 0.1.4 : testDebugUnitTest, assembleDebug et lintDebug réussis ; APK ARM64 produite. Les essais UI sur le téléphone et l’analyse du prochain diagnostic utilisateur restent à effectuer. Aucun succès de téléchargement sur plateforme n’est déduit de ces tests.
+
+
+## Vérifications 0.1.5 — moteur
+
+- Actif officiel yt-dlp 2026.10.21 récupéré et SHA-256 vérifié ; lancement --version confirmé sur Python local.
+- Redirection officielle github.com/releases/latest et somme SHA2-256SUMS accessibles dans l’environnement de développement. Le chemin de mise à jour téléphone ne dépend plus de api.github.com.
+- Téléchargement complet du trailer public W3C https://media.w3.org/2010/05/sintel/trailer.mp4 : 4 372 373 octets ; ffprobe confirme vidéo + audio, durée 52,208 s. Essai du moteur sur ordinateur, sans validation Android/MediaStore. Le test local utilise les autorités système pour le proxy de cet environnement ; aucun contrôle TLS désactivé, aucun changement TLS ajouté dans l’APK.
+- Analyse du lien Instagram fourni effectuée hors téléphone avec le moteur récent : réponse de restriction de public. Ce résultat n’établit ni la cause du refus sur le téléphone ni qu’une connexion résoudra le problème. Le lien n’est pas conservé dans le dépôt.
+- Tests ajoutés : lecture exacte des sommes (exclusion .exe/.tar.gz, absence/doublon refusés), distinction DNS/restriction de public.
+
+À vérifier sur téléphone : diagnostic moteur 2026.10.21 même si la vérification réseau échoue ; contrôle manuel sans api.github.com ; vidéo publique directe avec aperçu, sélection et copie dans Téléchargements/Home-DL ; vidéo publique de chaque plateforme séparément. Photos/carrousels et mises à jour APK non implémentés.
