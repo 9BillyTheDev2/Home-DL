@@ -31,10 +31,14 @@ object Diagnostics {
             Regex("""http(?: error)?[: ]+401\b""").containsMatchIn(causeText) ->
                 result("HTTP_401", "Le service refuse une requête non authentifiée.")
             "unsupported url" in causeText -> result("UNSUPPORTED", "Ce type de lien n’est pas pris en charge.")
+            "not available to everyone" in causeText || "can't be seen by certain audiences" in causeText ->
+                result("AUDIENCE_RESTRICTED", "Instagram indique une restriction de public pour cette publication. Son accès ne peut pas être confirmé sans session autorisée.")
             auth && (rate || " or " in causeText || "not available" in causeText) ->
                 result("ACCESS_UNCERTAIN", "Le moteur évoque plusieurs causes : accès restreint, connexion ou limitation.")
             rate -> result("RATE_LIMIT", "La plateforme limite les requêtes. Réessayez plus tard.")
             auth -> result("AUTH", "Le moteur indique explicitement une session ou un accès privé requis.")
+            listOf("unable to resolve host", "name or service not known", "eai_nodata", "temporary failure in name resolution")
+                .any { it in text } -> result("DNS", "Le téléphone ne trouve pas l’adresse du service. Essayez en Wi-Fi puis en données mobiles ; vérifiez un éventuel DNS privé ou VPN.")
             "timed out" in text || "timeout" in text -> result("NETWORK_TIMEOUT", "Le réseau ou le service ne répond pas à temps.")
             listOf("unable to resolve host", "name or service not known", "network is unreachable", "connection refused")
                 .any { it in text } -> result("NETWORK", "Connexion au service impossible.")

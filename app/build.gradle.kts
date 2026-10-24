@@ -6,8 +6,8 @@ android {
         applicationId = "app.homedl"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.4-diagnostics"
+        versionCode = 6
+        versionName = "0.1.5-engine"
         ndk { abiFilters += "arm64-v8a" }
     }
     signingConfigs {
@@ -34,3 +34,17 @@ dependencies {
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
     implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1")
 }
+
+// A local build must run the same verified preparation as CI; never ship an absent asset.
+val verifyEngineAsset by tasks.registering {
+    doLast {
+        val asset = file("src/main/assets/engine/yt-dlp")
+        check(asset.isFile) { "Run python3 scripts/prepare_engine.py from the repository root first." }
+        val actual = java.security.MessageDigest.getInstance("SHA-256").digest(asset.readBytes())
+            .joinToString("") { "%02x".format(it.toInt() and 255) }
+        check(actual == "b7af77f686e95f7845ce8d09d21957718febb8b48b30555adb9dd2292ad7bf14") {
+            "Bundled engine checksum mismatch"
+        }
+    }
+}
+tasks.named("preBuild") { dependsOn(verifyEngineAsset) }

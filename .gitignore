@@ -1,13 +1,6 @@
 .gradle/
-.gradle-cache/
 **/build/
 local.properties
-.idea/
-*.iml
+app/src/main/assets/engine/yt-dlp
 *.jks
 *.keystore
-*.apk
-*.aab
-.env*
-cookies*
-!cookies.example

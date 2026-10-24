@@ -7,12 +7,18 @@ import com.yausername.ffmpeg.FFmpeg
 import java.io.File
 
 class Extractor(private val context: Context) {
-    fun init() { EngineUpdates(context).recover(); YoutubeDL.init(context); FFmpeg.init(context) }
+    fun init() {
+        val updates = EngineUpdates(context)
+        updates.recover()
+        YoutubeDL.init(context)
+        updates.installBundled()
+        FFmpeg.init(context)
+    }
 
     private fun request(url: String): YoutubeDLRequest =
         YoutubeDLRequest(url).addOption("--ignore-config")
             .addOption("--socket-timeout", 15).addOption("--retries", 1)
-            .addOption("--extractor-retries", 1).addOption("--no-warnings")
+            .addOption("--extractor-retries", 1)
             .addOption("--playlist-end", 50)
 
     fun analyze(url: String, id: String): List<Media> {

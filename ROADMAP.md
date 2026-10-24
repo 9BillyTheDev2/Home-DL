@@ -2,6 +2,14 @@
 
 Mis à jour le 24 octobre 2026.
 
+## Priorité actuelle — moteur récent et accès réel (0.1.5)
+
+Captures reçues : la vérification moteur échoue avec UnknownHostException sur api.github.com ; l’analyse Instagram renvoie plusieurs hypothèses (contenu absent, limitation, connexion). Aucun téléchargement Instagram validé. Le lien de publication présenté ne permet pas de conclure que le média est une vidéo ; photos/carrousels restent non implémentés.
+
+Correction préparée : moteur officiel yt-dlp 2026.10.21 intégré lors de la compilation avec SHA-256 épinglé, puis installé atomiquement au premier lancement. Un moteur déjà plus récent est conservé. Les vérifications distantes passent désormais par github.com et les sommes officielles de la même release, sans dépendre de api.github.com. Taille, HTTPS et origines autorisées restent vérifiés. Erreur DNS distincte et avertissements du moteur conservés dans le diagnostic local masqué. Trois tests de lecture des sommes ajoutés ; compilation et essai téléphone à confirmer.
+
+Priorités restantes : valider une vidéo réelle avec le moteur récent ; déterminer si un accès connecté facultatif est nécessaire pour Instagram ; implémenter photos/carrousels ; signature permanente et mises à jour APK. Ne pas présenter cette correction réseau comme une résolution des restrictions Instagram.
+
 ## Objectif validé
 
 APK Android personnelle, autonome sur téléphone, sans publicité, sans serveur personnel et sans compte Home-DL. Coller un lien ou le partager vers l’application, afficher les médias accessibles avec aperçu, sélectionner les éléments et télécharger la meilleure qualité accessible. Photos, vidéos et publications mixtes sont dans le périmètre. Instagram, TikTok et X/Twitter sont prioritaires ; les autres sites seront ajoutés selon les essais.
