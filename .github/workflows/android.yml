@@ -9,6 +9,10 @@ on:
         options:
           - debug
           - signed-release
+      publish:
+        description: Publier la version signée pour la mise à jour intégrée
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -36,6 +40,9 @@ jobs:
       - name: Compiler le prototype
         if: inputs.package == 'debug'
         run: gradle :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --no-daemon
+      - name: Vérifier l’adaptateur Instagram public sur JVM
+        if: inputs.package == 'debug'
+        run: gradle :app:probePublicInstagram --no-daemon
       - name: Compiler avec la signature permanente
         if: inputs.package == 'signed-release'
         env:
@@ -54,9 +61,40 @@ jobs:
           trap 'rm -f "$HOME_DL_KEYSTORE"' EXIT
           printf '%s' "$HOME_DL_KEYSTORE_BASE64" | base64 --decode > "$HOME_DL_KEYSTORE"
           gradle :app:testDebugUnitTest :app:assembleRelease :app:lintRelease --no-daemon
+          python3 scripts/make_update_manifest.py
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify release/Home-DL.apk
       - uses: actions/upload-artifact@v4
+        if: inputs.package == 'debug'
         with:
           name: Home-DL-prototype-arm64
           path: app/build/outputs/apk/**/*.apk
           retention-days: 7
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: inputs.package == 'signed-release'
+        with:
+          name: Home-DL-release
+          path: release/
+          retention-days: 7
+          if-no-files-found: error
+  publish:
+    needs: build
+    if: inputs.package == 'signed-release' && inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Home-DL-release
+          path: release
+      - name: Publier la mise à jour signée
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("release/update.json"))["versionName"])')
+          gh release create "v$version" release/Home-DL.apk release/update.json --target "$SOURCE_COMMIT" --title "Home-DL $version" --notes "Mise à jour Home-DL signée. Installation avec confirmation Android." --latest

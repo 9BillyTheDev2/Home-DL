@@ -5,6 +5,7 @@ import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import com.yausername.ffmpeg.FFmpeg
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 class Extractor(private val context: Context) {
     fun init() {
@@ -21,7 +22,8 @@ class Extractor(private val context: Context) {
             .addOption("--extractor-retries", 1)
             .addOption("--playlist-end", 50)
 
-    fun analyze(url: String, id: String): List<Media> {
+    fun analyze(url: String, id: String, token: AtomicBoolean): List<Media> {
+        if (Links.platform(url) == "Instagram") return InstagramPublic.analyze(url, token)
         val req = request(url).addOption("--dump-single-json")
             .addOption("--skip-download").addOption("--no-flat-playlist")
         val output = YoutubeDL.execute(req, id, null).out
@@ -29,7 +31,18 @@ class Extractor(private val context: Context) {
         catch (_: org.json.JSONException) { throw EngineOutputException(output.length) }
     }
 
-    fun download(media: Media, directory: File, id: String, progress: (Float) -> Unit): File {
+    fun download(media: Media, directory: File, id: String, token: AtomicBoolean, progress: (Float) -> Unit): File {
+        if (media.directUrl != null) {
+            val target = File(directory, if (media.kind == MediaKind.PHOTO) "media.jpg" else "media.mp4")
+            target.outputStream().use { out ->
+                HttpsTransfer.stream(media.directUrl, 1024L * 1024 * 1024, token,
+                    System.nanoTime() + 1_800_000_000_000L, InstagramPublic::cdn, out,
+                    mapOf("Referer" to "https://www.instagram.com/")) { total, size ->
+                    if (size > 0) progress(total * 100f / size)
+                }
+            }
+            return MediaValidation.check(target, media.kind)
+        }
         val req = request(media.source)
             .addOption("-f", "bv*+ba/b")
             .addOption("--no-mtime")

@@ -2,7 +2,7 @@
 
 Mis à jour le 24 octobre 2026.
 
-## Priorité actuelle — moteur récent et accès réel (0.1.5)
+## Dernière version testée — moteur et accès (0.1.5)
 
 Captures reçues : la vérification moteur échoue avec UnknownHostException sur api.github.com ; l’analyse Instagram renvoie plusieurs hypothèses (contenu absent, limitation, connexion). Aucun téléchargement Instagram validé. Le lien de publication présenté ne permet pas de conclure que le média est une vidéo ; photos/carrousels restent non implémentés.
 
@@ -119,3 +119,11 @@ Essais utilisateur : AUTH sur une publication et UNKNOWN sur une vidéo ; aucun 
 ## Suivi — recherche sans connexion
 
 Comparaison des méthodes existantes et test réel d’une requête Instagram publique anonyme : produit média et trois variantes vidéo obtenus sans compte ni serveur de téléchargement tiers, dans l’environnement de développement. Une dépendance absente dans l’intégration Android actuelle empêche yt-dlp d’exécuter une requête anonyme importante. Un adaptateur Instagram public dédié est la piste retenue avant toute connexion obligatoire. Voir docs/INSTAGRAM_RESEARCH.md pour les preuves, les sources et les limites. Aucun changement de moteur, aucune nouvelle APK et aucune validation téléphone par cette étape. Photos/carrousels restent à implémenter.
+
+## En préparation — 0.2.0, Instagram public et mises à jour APK
+
+Adaptateur Instagram anonyme intégré au code : liens de publications/reels/TV publics, session technique en mémoire, contrôle d’accès puis requête dédiée, photos/vidéos/carrousels ordonnés et meilleure variante directe par dimensions. Les couvertures vidéo ne deviennent pas des photos de substitution. Téléchargement direct CDN borné et vérification du format avant MediaStore ; URLs privées non conservées dans le dépôt. Les autres sites conservent yt-dlp. Compilation et essai de ce nouveau code restent à confirmer. Qualité : meilleure variante progressive exposée ; pas de sélection DASH spécifique dans cet adaptateur.
+
+Code de mise à jour APK ajouté : recherche automatique à l’ouverture (6 h entre tentatives), bouton de vérification, annonce d’une version disponible, téléchargement après choix utilisateur, contrôle SHA-256/package/version/certificat identique, puis confirmation Android. Source unique : releases publiques de ce dépôt. Interrupteur pour la recherche automatique. Le moteur garde son propre mécanisme.
+
+Publication signée préparée dans le workflow manuel (signed-release + publish). Aucune clé créée ni aucun secret ajouté par cette étape. Il faut enregistrer une clé permanente hors des sources avant la première release, puis tester deux mises à jour successives sur appareil. Les APK de test précédentes ne partagent pas nécessairement cette signature : une transition manuelle reste nécessaire. Ne pas distribuer une nouvelle APK debug comme solution aux réinstallations répétées.

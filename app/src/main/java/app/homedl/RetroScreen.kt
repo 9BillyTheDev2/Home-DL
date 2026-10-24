@@ -33,6 +33,9 @@ class RetroScreen(private val activity: Activity) {
     val status = TextView(activity)
     val updateEngine = Button(activity)
     val automaticUpdates = Switch(activity)
+    val updateApp = Button(activity)
+    val automaticAppUpdates = Switch(activity)
+    val appUpdateStatus = TextView(activity)
     val items = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
     val download = Button(activity)
     val cancel = Button(activity)
@@ -78,6 +81,17 @@ class RetroScreen(private val activity: Activity) {
         header.addView(headerText)
         content.addView(header, spaced(-1, -2, 0, 16))
 
+        val appPanel = section(content, "HOME-DL  /  MISES À JOUR", CYAN)
+        appUpdateStatus.apply {
+            text = "Version " + activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
+            textSize = 12f
+            setTextColor(MUTED)
+            setPadding(0, 0, 0, dp(8))
+        }
+        appPanel.addView(appUpdateStatus)
+        decorateButton(updateApp, "Vérifier la mise à jour de l’app", false)
+        appPanel.addView(updateApp, LinearLayout.LayoutParams(-1, -2))
+
         val source = section(content, "01  /  ENTREZ DANS LE FLUX", ORANGE)
         source.addView(label("Collez un lien, récupérez l’instant.", 15f, TEXT))
         link.apply {
@@ -120,7 +134,7 @@ class RetroScreen(private val activity: Activity) {
         feedbackHead.addView(count)
         feedback.addView(feedbackHead)
         status.apply {
-            text = "Prêt à analyser un lien.\nPrototype vidéo · photos en préparation."
+            text = "Prêt à analyser un lien.\nInstagram public : photos, vidéos et carrousels."
             textSize = 13f
             setTextColor(MUTED)
             setPadding(0, dp(8), 0, 0)
@@ -153,6 +167,15 @@ class RetroScreen(private val activity: Activity) {
         settings.addView(automaticUpdates)
         decorateButton(updateEngine, "Vérifier le moteur maintenant", false)
         settings.addView(updateEngine, LinearLayout.LayoutParams(-1, dp(48)))
+        automaticAppUpdates.apply {
+            text = "Application : rechercher les mises à jour"
+            textSize = 13f
+            setTextColor(TEXT)
+            minHeight = dp(56)
+            thumbTintList = ColorStateList.valueOf(CYAN)
+            trackTintList = ColorStateList.valueOf(BORDER)
+        }
+        settings.addView(automaticAppUpdates)
         val animation = Switch(activity).apply {
             text = "Pluie de code animée"
             textSize = 13f

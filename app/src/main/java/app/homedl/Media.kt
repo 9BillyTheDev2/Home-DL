@@ -3,7 +3,9 @@ package app.homedl
 import java.net.URI
 import org.json.JSONObject
 
-data class Media(val source: String, val index: Int?, val title: String, val preview: String?, val quality: String)
+enum class MediaKind { PHOTO, VIDEO }
+data class Media(val source: String, val index: Int?, val title: String, val preview: String?, val quality: String,
+                 val directUrl: String? = null, val kind: MediaKind = MediaKind.VIDEO)
 
 object Links {
     fun platform(text: String): String {

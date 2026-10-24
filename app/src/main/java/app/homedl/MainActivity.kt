@@ -20,6 +20,12 @@ class MainActivity : Activity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val previews = Executors.newFixedThreadPool(2)
     private val timer = Executors.newSingleThreadScheduledExecutor()
+    private val appChecks = Executors.newSingleThreadExecutor()
+    private val appCheckToken = AtomicBoolean(false)
+    private lateinit var appUpdates: AppUpdates
+    private var availableRelease: AppRelease? = null
+    private var appChecking = false
+    private var waitingForInstallPermission = false
     private lateinit var extractor: Extractor
     private lateinit var screen: RetroScreen
     private lateinit var link: EditText
@@ -43,6 +49,7 @@ class MainActivity : Activity() {
         extractor = Extractor(applicationContext)
         engineUpdates = EngineUpdates(applicationContext)
         screen = RetroScreen(this)
+        appUpdates = AppUpdates(applicationContext)
         val root = screen.root
         link = screen.link
         analyze = screen.analyze
@@ -52,6 +59,18 @@ class MainActivity : Activity() {
         cancel = screen.cancel
         updateEngine = screen.updateEngine
         automaticUpdates = screen.automaticUpdates
+        screen.automaticAppUpdates.isChecked = appUpdates.enabled()
+        screen.automaticAppUpdates.setOnCheckedChangeListener { _, value -> appUpdates.setEnabled(value) }
+        screen.updateApp.setOnClickListener {
+            if (busy) return@setOnClickListener
+            if (appUpdates.hasDownloaded()) offerInstall()
+            else availableRelease?.let { release ->
+                android.app.AlertDialog.Builder(this).setTitle("Home-DL " + release.versionName)
+                    .setMessage("Télécharger cette mise à jour ? Android vous demandera ensuite de confirmer son installation. Vos réglages seront conservés si la signature correspond.")
+                    .setPositiveButton("Télécharger") { _, _ -> downloadApp(release) }
+                    .setNegativeButton("Plus tard", null).show()
+            } ?: checkAppUpdates()
+        }
         setContentView(root)
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = 0
@@ -123,6 +142,57 @@ class MainActivity : Activity() {
                 }
             }
         }
+        if (appUpdates.due()) checkAppUpdates()
+    }
+
+    private fun checkAppUpdates() {
+        if (appChecking) return
+        appChecking = true
+        screen.updateApp.isEnabled = false
+        screen.appUpdateStatus.text = "Recherche d’une nouvelle version…"
+        appChecks.submit {
+            try {
+                val release = appUpdates.check(appCheckToken)
+                ui {
+                    availableRelease = release
+                    screen.appUpdateStatus.text = if (release == null) "Version " + appVersion() + " · aucune version plus récente publiée."
+                        else "Nouvelle version disponible : " + release.versionName
+                    screen.updateApp.text = if (release == null) "Vérifier la mise à jour de l’app"
+                        else "Mettre Home-DL à jour"
+                }
+            } catch (_: Exception) {
+                ui { screen.appUpdateStatus.text = "Vérification de l’app indisponible. Vous pouvez réessayer ici." }
+            } finally {
+                ui { appChecking = false; screen.updateApp.isEnabled = !busy }
+            }
+        }
+    }
+
+    private fun downloadApp(release: AppRelease) {
+        begin("Téléchargement de Home-DL " + release.versionName + "…", 200, Stage.UPDATE, initialize = false) { _, token ->
+            appUpdates.download(release, token) { percent -> ui { status.text = "Mise à jour Home-DL : " + percent + " %" } }
+            ui {
+                screen.updateApp.text = "Installer la mise à jour téléchargée"
+                screen.appUpdateStatus.text = "APK vérifiée : version, intégrité et signature."
+                status.text = "Mise à jour prête. Appuyez sur Installer pour continuer."
+            }
+        }
+    }
+
+    private fun offerInstall() {
+        val allowed = packageManager.canRequestPackageInstalls()
+        android.app.AlertDialog.Builder(this).setTitle("Installer la mise à jour")
+            .setMessage(if (allowed) "Android va vous demander de confirmer la mise à jour de Home-DL."
+                else "Autorisez Home-DL comme source d’installation dans l’écran Android qui va s’ouvrir. Revenez ensuite ici pour confirmer l’installation.")
+            .setPositiveButton(if (allowed) "Installer" else "Ouvrir les réglages") { _, _ ->
+                try {
+                    waitingForInstallPermission = !allowed
+                    appUpdates.install(this)
+                } catch (_: Exception) {
+                    waitingForInstallPermission = false
+                    screen.appUpdateStatus.text = "Installation impossible : fichier absent, version ou signature refusée. Relancez une vérification."
+                }
+            }.setNegativeButton("Plus tard", null).show()
     }
 
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); acceptShare(intent) }
@@ -175,6 +245,7 @@ class MainActivity : Activity() {
         analyze.isEnabled = false; download.isEnabled = false; link.isEnabled = false; cancel.isEnabled = true
         updateEngine.isEnabled = false
         automaticUpdates.isEnabled = false
+        screen.updateApp.isEnabled = false
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         status.text = message
         val deadline = timer.schedule({
@@ -209,6 +280,7 @@ class MainActivity : Activity() {
                     analyze.isEnabled = true; link.isEnabled = true; cancel.isEnabled = false
                     updateEngine.isEnabled = true
                     automaticUpdates.isEnabled = true
+                    screen.updateApp.isEnabled = !appChecking
                     download.isEnabled = selected.isNotEmpty()
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
@@ -220,12 +292,12 @@ class MainActivity : Activity() {
         val url = try { Links.parse(link.text.toString()) } catch (e: Exception) { status.text = e.message; return }
         link.setSelection(0)
         items.removeAllViews(); selected.clear(); screen.setMediaCount(0)
-        begin("Analyse en cours…", 120, Stage.ANALYZE) { id, token ->
-            val found = extractor.analyze(url, id)
+        begin("Analyse en cours…", 120, Stage.ANALYZE, initialize = Links.platform(url) != "Instagram") { id, token ->
+            val found = extractor.analyze(url, id, token)
             if (token.get()) throw InterruptedException()
             ui {
-                status.text = if (found.isEmpty()) "Aucune vidéo détectée. Les photos ne sont pas encore prises en charge."
-                    else "${found.size} vidéo(s) détectée(s). Sélectionnez les éléments."
+                status.text = if (found.isEmpty()) "Aucun média exploitable détecté."
+                    else "${found.size} média(s) détecté(s). Sélectionnez les éléments."
                 screen.setMediaCount(found.size)
                 found.forEach { media -> addCard(media) }
             }
@@ -239,7 +311,7 @@ class MainActivity : Activity() {
         screen.decorateCard(box)
         val image = ImageView(this).apply {
             setBackgroundColor(RetroScreen.BACKGROUND); scaleType = ImageView.ScaleType.CENTER_CROP
-            contentDescription = "Aperçu de la vidéo"
+            contentDescription = if (media.kind == MediaKind.PHOTO) "Aperçu de la photo" else "Aperçu de la vidéo"
         }
         box.addView(image, LinearLayout.LayoutParams(-1, dp(190)))
         box.addView(CheckBox(this).apply {
@@ -288,13 +360,14 @@ class MainActivity : Activity() {
     private fun downloadSelected() {
         val batch = selected.toList()
         if (batch.isEmpty()) return
-        begin("Préparation du téléchargement…", 1800, Stage.DOWNLOAD) { id, token ->
+        begin("Préparation du téléchargement…", 1800, Stage.DOWNLOAD,
+            initialize = batch.any { it.directUrl == null }) { id, token ->
             var saved = 0
             for (media in batch) {
                 if (token.get()) throw InterruptedException()
                 val directory = File(cacheDir, "download-${UUID.randomUUID()}").apply { mkdirs() }
                 try {
-                    val file = extractor.download(media, directory, id) { percent ->
+                    val file = extractor.download(media, directory, id, token) { percent ->
                         ui { status.text = "Fichier ${saved + 1}/${batch.size} • ${percent.toInt().coerceIn(0, 100)} %" }
                     }
                     MediaStoreWriter.save(applicationContext, file) { token.get() }
@@ -308,12 +381,23 @@ class MainActivity : Activity() {
 
     private fun ui(action: () -> Unit) { runOnUiThread { if (!isDestroyed) action() } }
 
-    override fun onResume() { super.onResume(); if (::screen.isInitialized) screen.resume() }
+    override fun onResume() {
+        super.onResume()
+        if (::screen.isInitialized) {
+            screen.resume()
+            if (::appUpdates.isInitialized && appUpdates.hasDownloaded()) screen.updateApp.text = "Installer la mise à jour téléchargée"
+            if (waitingForInstallPermission) {
+                waitingForInstallPermission = false
+                if (packageManager.canRequestPackageInstalls()) offerInstall()
+            }
+        }
+    }
     override fun onPause() { if (::screen.isInitialized) screen.pause(); super.onPause() }
 
     override fun onDestroy() {
         cancelled.set(true); operation?.let { extractor.cancel(it) }
         worker.shutdownNow(); previews.shutdownNow(); timer.shutdownNow()
+        appCheckToken.set(true); appChecks.shutdownNow()
         super.onDestroy()
     }
 }

@@ -8,8 +8,8 @@ android {
         applicationId = "app.homedl"
         minSdk = 29
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.5-engine"
+        versionCode = 7
+        versionName = "0.2.0"
         ndk { abiFilters += "arm64-v8a" }
     }
     signingConfigs {
@@ -32,7 +32,9 @@ android {
     packaging { jniLibs { useLegacyPackaging = true } }
 }
 dependencies {
+    implementation("androidx.core:core:1.15.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
     implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1")
 }
@@ -50,3 +52,9 @@ val verifyEngineAsset by tasks.registering {
     }
 }
 tasks.named("preBuild") { dependsOn(verifyEngineAsset) }
+
+tasks.register<JavaExec>("probePublicInstagram") {
+    dependsOn("testDebugUnitTest")
+    classpath = tasks.named<Test>("testDebugUnitTest").get().classpath
+    mainClass.set("app.homedl.PublicInstagramProbe")
+}
