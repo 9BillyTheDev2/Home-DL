@@ -26,7 +26,16 @@ class Extractor(private val context: Context) {
         if (Links.platform(url) == "Instagram") return InstagramPublic.analyze(url, token)
         val req = request(url).addOption("--dump-single-json")
             .addOption("--skip-download").addOption("--no-flat-playlist")
-        val output = AnalysisTrace.step(AnalysisTrace.Step.ENGINE_ANALYZE) { YoutubeDL.execute(req, id, null).out }
+        val output = try {
+            AnalysisTrace.step(AnalysisTrace.Step.ENGINE_ANALYZE) { YoutubeDL.execute(req, id, null).out }
+        } catch (error: Exception) {
+            HttpsTransfer.active(token, Long.MAX_VALUE)
+            if (Links.platform(url) == "X" && Diagnostics.classify(error).code in setOf("NO_VIDEO", "UNSUPPORTED"))
+                return XPublicPhotos.analyze(url, token)
+            if (Links.platform(url) == "TikTok" && Diagnostics.classify(error).code in setOf("NO_VIDEO", "UNSUPPORTED"))
+                return TikTokPublicPhotos.analyze(url, token)
+            throw error
+        }
         AnalysisTrace.bytes(output.toByteArray(Charsets.UTF_8).size.toLong())
         return try { AnalysisTrace.step(AnalysisTrace.Step.MEDIA_PARSE) { MediaParser.parse(url, output) }
             .also { AnalysisTrace.media(it) } }
@@ -38,8 +47,19 @@ class Extractor(private val context: Context) {
             val target = File(directory, if (media.kind == MediaKind.PHOTO) "media.jpg" else "media.mp4")
             target.outputStream().use { out ->
                 HttpsTransfer.stream(media.directUrl, 1024L * 1024 * 1024, token,
-                    System.nanoTime() + 1_800_000_000_000L, InstagramPublic::cdn, out,
-                    mapOf("Referer" to "https://www.instagram.com/")) { total, size ->
+                    System.nanoTime() + 1_800_000_000_000L, { host ->
+                        when (Links.platform(media.source)) {
+                            "Instagram" -> InstagramPublic.cdn(host)
+                            "X" -> host == "pbs.twimg.com" && media.kind == MediaKind.PHOTO
+                            "TikTok" -> TikTokPublicPhotos.cdn(host) && media.kind == MediaKind.PHOTO
+                            else -> false
+                        }
+                    }, out,
+                    mapOf("Referer" to when (Links.platform(media.source)) {
+                        "X" -> "https://x.com/"
+                        "TikTok" -> "https://www.tiktok.com/"
+                        else -> "https://www.instagram.com/"
+                    })) { total, size ->
                     if (size > 0) progress(total * 100f / size)
                 }
             }

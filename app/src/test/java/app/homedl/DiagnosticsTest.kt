@@ -4,6 +4,10 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DiagnosticsTest {
+    @Test fun unavailablePhotosAreNotReportedAsAnAuthenticationRequirement() {
+        assertEquals("NO_PHOTOS", Diagnostics.classify(IllegalStateException("No public TikTok photo detail")).code)
+        assertEquals("MIXED_MEDIA", Diagnostics.classify(IllegalStateException("Mixed X media not supported by photo fallback")).code)
+    }
     @Test fun cookieHelpDoesNotBecomeAnAuthenticationFailure() {
         val error = Exception("No video formats found. Use --cookies for the authentication. See https://example.invalid/help")
         assertEquals("NO_VIDEO", Diagnostics.classify(error).code)

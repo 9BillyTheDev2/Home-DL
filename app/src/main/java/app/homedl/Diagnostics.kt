@@ -38,6 +38,9 @@ object Diagnostics {
             Regex("""http(?: error)?[: ]+401\b""").containsMatchIn(causeText) ->
                 result("HTTP_401", "Le service refuse une requête non authentifiée.")
             "unsupported url" in causeText -> result("UNSUPPORTED", "Ce type de lien n’est pas pris en charge.")
+            "mixed x media not supported" in causeText -> result("MIXED_MEDIA", "Cette publication mélange plusieurs types de médias ; le mode photo ne peut pas la traiter entièrement.")
+            listOf("no public photo data from x", "no public tiktok photo", "tiktok did not expose public post data")
+                .any { it in causeText } -> result("NO_PHOTOS", "La méthode photo n’a reçu aucune collection exploitable. Le diagnostic précise l’étape ; cela ne prouve pas que la publication est privée.")
             "not available to everyone" in causeText || "can't be seen by certain audiences" in causeText ->
                 result("AUDIENCE_RESTRICTED", "Instagram indique une restriction de public pour cette publication. Son accès ne peut pas être confirmé sans session autorisée.")
             auth && (rate || " or " in causeText || "not available" in causeText) ->

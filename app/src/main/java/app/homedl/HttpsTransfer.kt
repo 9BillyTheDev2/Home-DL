@@ -15,9 +15,10 @@ object HttpsTransfer {
 
     fun bytes(address: String, limit: Int, token: AtomicBoolean, deadline: Long,
               allowed: (String) -> Boolean, headers: Map<String, String> = emptyMap(),
-              form: ByteArray? = null, cookies: java.net.CookieManager? = null): ByteArray {
+              form: ByteArray? = null, cookies: java.net.CookieManager? = null,
+              resolved: (String) -> Unit = {}): ByteArray {
         val out = ByteArrayOutputStream()
-        stream(address, limit.toLong(), token, deadline, allowed, out, headers, form, cookies)
+        stream(address, limit.toLong(), token, deadline, allowed, out, headers, form, cookies, resolved)
         return out.toByteArray()
     }
 
@@ -25,6 +26,7 @@ object HttpsTransfer {
                allowed: (String) -> Boolean, output: OutputStream,
                headers: Map<String, String> = emptyMap(), form: ByteArray? = null,
                cookies: java.net.CookieManager? = null,
+               resolved: (String) -> Unit = {},
                progress: (Long, Long) -> Unit = { _, _ -> }): Long {
         var url = URL(address)
         repeat(5) {
@@ -62,6 +64,7 @@ object HttpsTransfer {
                     }
                 } else {
                     if (code != 200) throw HttpStatusException(code)
+                    resolved(url.toString())
                     val length = connection.contentLengthLong
                     require(length <= limit) { "Response too large" }
                     var total = 0L

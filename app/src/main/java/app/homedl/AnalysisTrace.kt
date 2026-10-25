@@ -3,7 +3,8 @@ package app.homedl
 /** One bounded, memory-only trace per worker operation. Never accepts URLs or server text. */
 object AnalysisTrace {
     enum class Step { ENGINE_INIT, INSTAGRAM_REFERENCE, INSTAGRAM_SESSION, INSTAGRAM_ACCESS,
-        INSTAGRAM_SHORTCODE, INSTAGRAM_POLARIS, ENGINE_ANALYZE, MEDIA_PARSE, MEDIA_DOWNLOAD }
+        INSTAGRAM_SHORTCODE, INSTAGRAM_POLARIS, ENGINE_ANALYZE, X_PUBLIC_PHOTOS,
+        TIKTOK_RESOLVE, TIKTOK_PUBLIC_PHOTOS, MEDIA_PARSE, MEDIA_DOWNLOAD }
     private class Session(val started: Long = System.nanoTime(), val lines: MutableList<String> = mutableListOf())
     private val current = ThreadLocal<Session>()
 
