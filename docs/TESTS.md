@@ -119,4 +119,6 @@ Résultat 0.2.2 : build et publication réussis sur a290189f240321f84d0679290ed2
 
 ## Préparation 0.2.3 — affichage des mises à jour
 
-Revue du parcours : confirmation du téléchargement, statut 0 % et barre dans la carte de mise à jour ; progression calculée sur la taille connue du manifeste indépendamment du Content-Length HTTP ; vérification de l’APK annoncée avant le bouton d’installation ; échec/annulation visible dans la carte. Pas de test d’interface Android disponible localement. Compilation Android, suite JVM et lint à exécuter. La cause réseau ou installation sur le téléphone n’est pas déduite de ce défaut d’affichage.
+Revue du parcours : confirmation du téléchargement, statut 0 % et barre dans la carte de mise à jour ; progression calculée sur la taille connue du manifeste indépendamment du Content-Length HTTP ; vérification de l’APK annoncée avant le bouton d’installation ; échec/annulation visible dans la carte. Pas de test d’interface Android disponible localement. Compilation Android, suite JVM et lint réussis (exécution 40185675685). La cause réseau ou installation sur le téléphone n’est pas déduite de ce défaut d’affichage.
+
+Résultat 0.2.3 : testDebugUnitTest, assembleRelease, lintRelease et publication réussis sur bd7698a06ac22ab39b14fa88acacd3979ce784d4. Manifeste latest 10/0.2.3 et APK réellement téléchargée : 65061668 octets, SHA-256 e10b5e8a20bd870df3e79db5dee5149513998ea3c1d4036d821b01f139cabf91 conforme. Signature v2 et certificat permanent validés par apksig. Parcours de mise à jour sur appareil encore non confirmé.

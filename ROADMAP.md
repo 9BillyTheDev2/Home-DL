@@ -2,7 +2,7 @@
 
 Mis à jour le 25 octobre 2026.
 
-**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.2 publiée avec une trace locale pour identifier les étapes en échec.
+**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.3 publiée : trace locale des étapes en échec et progression visible des mises à jour APK.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -158,6 +158,8 @@ Cinq tests nouveaux : phase exacte d’un HTTP_404, exclusion des contenus priv�
 Validation 0.2.2 : commit a290189f240321f84d0679290ed225c4065b2344, testDebugUnitTest (42 tests dans les sources), assembleRelease et lintRelease réussis. Le code Kotlin hors Android a reproduit le refus du lien fourni : session HTTP 200, contrôle d’accès HTTP 404 (JSON, 51 octets annoncés), trace conforme et sans URL. APK publiée de 65 059 300 octets, SHA-256 613541d424b4fd81677cffb578c5b6cd3dd9db219b63c1134130b3de0d895f71 ; route latest version 9/0.2.2 et signature v2/certificat permanent vérifiés sur le fichier réellement téléchargé. Rapport sur téléphone restant à valider.
 
 
-## En préparation — 0.2.3, progression de la mise à jour APK
+## Suivi — 0.2.3, progression de la mise à jour APK
 
-Le propriétaire ne voit aucune réaction après le téléchargement demandé. Limites confirmées dans le code : pourcentage affiché dans le bloc d’état éloigné de la carte de mise à jour, aucune barre, callback dépendant du Content-Length. Cause du téléchargement non abouti sur téléphone non établie. Ajout d’une barre horizontale et d’un statut immédiat à 0 % dans la carte de mise à jour, progression fondée sur la taille du manifeste déjà validé, notifications limitées aux changements de pourcentage, phase de vérification distincte à 100 %, erreur ou annulation visible dans cette même carte et bouton de nouvelle tentative. Les contrôles d’intégrité et de signature restent obligatoires. Compilation/tests/lint et publication à confirmer. Aucun changement de récupération des médias.
+Le propriétaire ne voit aucune réaction après le téléchargement demandé. Limites confirmées dans le code : pourcentage affiché dans le bloc d’état éloigné de la carte de mise à jour, aucune barre, callback dépendant du Content-Length. Cause du téléchargement non abouti sur téléphone non établie. Ajout d’une barre horizontale et d’un statut immédiat à 0 % dans la carte de mise à jour, progression fondée sur la taille du manifeste déjà validé, notifications limitées aux changements de pourcentage, phase de vérification distincte à 100 %, erreur ou annulation visible dans cette même carte et bouton de nouvelle tentative. Les contrôles d’intégrité et de signature restent obligatoires. Compilation/tests/lint et publication réussis (exécution 40185675685). Aucun changement de récupération des médias.
+
+Validation 0.2.3 : testDebugUnitTest, assembleRelease et lintRelease réussis sur bd7698a06ac22ab39b14fa88acacd3979ce784d4. APK de 65 061 668 octets réellement téléchargée, SHA-256 e10b5e8a20bd870df3e79db5dee5149513998ea3c1d4036d821b01f139cabf91 conforme au manifeste latest 10/0.2.3. Signature v2 et certificat permanent vérifiés par apksig. Affichage et téléchargement intégré sur téléphone à valider.
