@@ -2,7 +2,7 @@
 
 Mis à jour le 25 octobre 2026.
 
-**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.3 publiée : trace locale des étapes en échec et progression visible des mises à jour APK.
+**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.4 publiée : récupération photo dédiée X/TikTok, trace locale des étapes en échec et progression visible des mises à jour APK.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -165,8 +165,10 @@ Le propriétaire ne voit aucune réaction après le téléchargement demandé. L
 Validation 0.2.3 : testDebugUnitTest, assembleRelease et lintRelease réussis sur bd7698a06ac22ab39b14fa88acacd3979ce784d4. APK de 65 061 668 octets réellement téléchargée, SHA-256 e10b5e8a20bd870df3e79db5dee5149513998ea3c1d4036d821b01f139cabf91 conforme au manifeste latest 10/0.2.3. Signature v2 et certificat permanent vérifiés par apksig. Affichage et téléchargement intégré sur téléphone à valider.
 
 
-## En préparation — 0.2.4, photos publiques X et TikTok
+## Suivi — 0.2.4, photos publiques X et TikTok
 
 Méthodes photo dédiées, exécutées seulement si le moteur vidéo retourne NO_VIDEO ou UNSUPPORTED ; arrêt conservé sur autres erreurs, refus HTTP ou annulation. X : métadonnées publiques de syndication, identité du post vérifiée, images top-level uniquement, variante CDN originale et aperçu réduit. Refus des collections mixtes dans ce mode de secours plutôt que de substituer une couverture vidéo. TikTok : résolution du lien court, normalisation photo vers route publique vidéo comme gallery-dl, lecture du bloc imagePost et contrôle de l’identité. URL signée CDN gardée seulement en mémoire. Transferts limités aux CDN de chaque plateforme, HTTPS, tailles/délais bornés et format JPEG/PNG/WebP vérifié avant MediaStore. Aucun compte, serveur intermédiaire ou traitement d’image ajouté.
 
-Essai réel du code Kotlin depuis l’environnement de développement, avec son routage standard : une photo X 1168 × 784 (163004 octets) et deux photos TikTok 1080 × 1920 (502891 octets) et 608 × 1080 (202450 octets), tous JPEG vérifiés puis supprimés. Aucun lien ou contenu utilisateur dans le dépôt. Les vidéos gardent leur parcours moteur existant ; non retestées sur appareil par cette étape. 11 tests des adaptateurs ajoutés (identité, ordre, dimensions, absence de substitution de couverture, origines CDN et données absentes/refusées), plus classement diagnostic photo. Suite locale de 41 tests réussie ; compilation Android et publication à confirmer.
+Essai réel du code Kotlin depuis l’environnement de développement, avec son routage standard : une photo X 1168 × 784 (163004 octets) et deux photos TikTok 1080 × 1920 (502891 octets) et 608 × 1080 (202450 octets), tous JPEG vérifiés puis supprimés. Aucun lien ou contenu utilisateur dans le dépôt. Les vidéos gardent leur parcours moteur existant ; non retestées sur appareil par cette étape. 11 tests des adaptateurs ajoutés (identité, ordre, dimensions, absence de substitution de couverture, origines CDN et données absentes/refusées), plus classement diagnostic photo. Suite locale de 41 tests réussie ; compilation Android et publication réussies (exécution 40192618900).
+
+Validation 0.2.4 : tests JVM (54 méthodes dans les sources), assembleRelease, lintRelease et publication réussis sur 518240df9e24ac18b920b03cbd94221f82d33248. Manifeste latest 11/0.2.4 et APK de 65 077 036 octets réellement téléchargée, SHA-256 688241d4324c9c9e209b0fdd1b26342337f3ec1a2b7a1d0cea0fa7a7b48dc43e conforme. Signature v2 et certificat permanent vérifiés. Les trois photos citées valident les adaptateurs Kotlin hors appareil, sans démontrer la compatibilité universelle. Aperçus, sélection et MediaStore à valider sur téléphone.
