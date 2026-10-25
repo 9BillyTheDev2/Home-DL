@@ -32,6 +32,19 @@ class InstagramBrowserResultTest {
         assertTrue(InstagramBrowserResult.accessPage("https://www.instagram.com/challenge/"))
         assertFalse(InstagramBrowserResult.accessPage(source))
     }
+    @Test fun appAndExternalTargetsAreIgnoredWhileWebAndAccessStayDistinct() {
+        assertEquals(InstagramBrowserResult.Navigation.PAGE, InstagramBrowserResult.navigation(source))
+        assertEquals(InstagramBrowserResult.Navigation.ACCESS, InstagramBrowserResult.navigation("https://www.instagram.com/accounts/login/"))
+        assertEquals(InstagramBrowserResult.Navigation.ACCESS, InstagramBrowserResult.navigation("https://www.instagram.com/challenge/"))
+        for (url in listOf("instagram://media?id=PRIVATE", "intent://media/#Intent;scheme=instagram;end", "https://external.invalid/?secret=PRIVATE", "about:blank")) {
+            assertEquals(InstagramBrowserResult.Navigation.IGNORE, InstagramBrowserResult.navigation(url))
+            assertFalse(InstagramBrowserResult.navigationSummary(url).contains("PRIVATE"))
+            assertFalse(InstagramBrowserResult.navigationSummary(url).contains("external.invalid"))
+        }
+        assertEquals("scheme=INSTAGRAM_APP origin=OTHER", InstagramBrowserResult.navigationSummary("instagram://media?id=PRIVATE"))
+        assertEquals("scheme=APP_INTENT origin=OTHER", InstagramBrowserResult.navigationSummary("intent://media/#Intent;scheme=instagram;end"))
+    }
+
     @Test fun diagnosticContainsOnlyBoundedCounters() {
         val data = response().put("secret", "PRIVATE_SECRET")
         data.getJSONObject("stats").put("scripts", -2).put("matched", 999999)

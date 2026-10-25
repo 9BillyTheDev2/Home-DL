@@ -210,3 +210,12 @@ Validation 0.2.6 : première compilation sans publication réussie (40223782526,
 
 
 Publication 0.2.6 autorisée explicitement par le propriétaire après présentation de la version expérimentale. L’envoi navigateur initial a expiré et sa session a été réinitialisée ; vérification des releases : aucune v0.2.6 ni brouillon créé par cet essai. Publication achevée via la chaîne existante, exécution 40234001184 sur 0937505fc9b81080021abd2cf370a5375a02d101, build et publish réussis. Release latest v0.2.6 et manifeste 13/0.2.6 vérifiés. APK publique réellement téléchargée : 65216706 octets, SHA-256 e9dc5feba32cafd3bc8f951790866e1c6faa7b9f67f61782c46ede206642ae9d conforme au manifeste et aux métadonnées GitHub ; signature v2/certificat permanent validés avec apksig. Cette empreinte concerne l’APK publiée par cette exécution, distincte de l’artefact de compilation précédent. Code fonctionnel inchangé depuis e6b00c6. Notes publiques et instructions du mode navigateur expérimental ajoutées. Validation réelle WebView sur téléphone toujours attendue ; aucune réussite revendiquée sur les publications en échec.
+
+
+## Suivi — 0.2.7, arrêt prématuré du navigateur
+
+Deux rapports téléphone en 0.2.6 montrent BROWSER_DOCUMENT_START ENABLED, BROWSER_ANONYMOUS BEGIN puis BROWSER_PAGE BEGIN et IG_BROWSER_NAVIGATION avant BROWSER_PAGE LOADED. Le code utilisait cette même erreur pour une navigation hors de l’origine autorisée et pour un événement de téléchargement détaché ; ces traces ne permettent donc pas d’identifier le déclencheur. Aucune conclusion sur une restriction Instagram ou géographique.
+
+Correction : les cibles non autorisées (dont intent/instagram) restent bloquées, mais seule leur navigation est annulée, sans fermer l’inspection de la page originale ni ouvrir une application externe. Une demande de connexion/challenge reste arrêtée. Les téléchargements détachés ne sont pas acceptés sans identité et ne ferment plus le navigateur. Trace à catégories fixes BROWSER_NAVIGATION IGNORED scheme/origin et BROWSER_DOWNLOAD IGNORED, sans URL, identifiant ni paramètre. Début de l’inspection à onPageCommitVisible, sans attendre la fin de tous les chargements. Limite 45 secondes inchangée.
+
+Tests ciblés de politique de navigation : page Instagram autorisée, accès explicite arrêté, liens d’application et origine externe ignorés, exclusion des secrets dans les traces. Aucun succès de récupération revendiqué avant essai sur téléphone. Compilation Android/publication à consigner après vérification.

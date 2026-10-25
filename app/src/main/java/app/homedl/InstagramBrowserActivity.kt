@@ -118,9 +118,19 @@ class InstagramBrowserActivity : Activity() {
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 if (!request.isForMainFrame) return false
-                if (!InstagramBrowserResult.allowedPage(request.url.toString())) { finishFailure("IG_BROWSER_NAVIGATION"); return true }
-                if (InstagramBrowserResult.accessPage(request.url.toString())) { finishFailure("IG_BROWSER_ACCESS"); return true }
-                return false
+                val target = request.url.toString()
+                return when (InstagramBrowserResult.navigation(target)) {
+                    InstagramBrowserResult.Navigation.IGNORE -> {
+                        event("BROWSER_NAVIGATION IGNORED " + InstagramBrowserResult.navigationSummary(target))
+                        // Reject this target only; keep inspecting the original page. Never launch an app intent.
+                        true
+                    }
+                    InstagramBrowserResult.Navigation.ACCESS -> {
+                        event("BROWSER_NAVIGATION ACCESS")
+                        finishFailure("IG_BROWSER_ACCESS"); true
+                    }
+                    InstagramBrowserResult.Navigation.PAGE -> false
+                }
             }
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 val uri = request.url
@@ -132,14 +142,16 @@ class InstagramBrowserActivity : Activity() {
                 if (!InstagramBrowserResult.allowedPage(url) || InstagramBrowserResult.accessPage(url)) { finishFailure("IG_BROWSER_ACCESS"); return }
                 event("BROWSER_PAGE BEGIN")
             }
+            override fun onPageCommitVisible(view: WebView, url: String) {
+                if (!finished && InstagramBrowserResult.allowedPage(url) && !InstagramBrowserResult.accessPage(url)) {
+                    event("BROWSER_PAGE VISIBLE")
+                    startInspection()
+                }
+            }
             override fun onPageFinished(view: WebView, url: String) {
                 if (finished || !InstagramBrowserResult.allowedPage(url)) return
-                loaded = true; event("BROWSER_PAGE LOADED")
-                bar.isIndeterminate = true
-                label.text = "Lecture des médias après JavaScript…\nAucun compte connecté · délai maximal 45 s"
-                // Fallback when the installed WebView does not support document-start scripts.
-                web.evaluateJavascript(script, null)
-                if (!polling) { polling = true; poll() }
+                event("BROWSER_PAGE LOADED")
+                startInspection()
             }
             override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
                 finishFailure("IG_BROWSER_RENDER"); return true
@@ -151,7 +163,10 @@ class InstagramBrowserActivity : Activity() {
                 if (request.isForMainFrame) { event("BROWSER_HTTP status=${response.statusCode}"); finishFailure("IG_BROWSER_HTTP") }
             }
         }
-        web.setDownloadListener { _, _, _, _, _ -> finishFailure("IG_BROWSER_NAVIGATION") }
+        web.setDownloadListener { target, _, _, _, _ ->
+            event("BROWSER_DOWNLOAD IGNORED " + InstagramBrowserResult.navigationSummary(target))
+            // A detached download has no proven post identity; do not accept it or close the page.
+        }
         val cookies = CookieManager.getInstance()
         cookies.setAcceptCookie(true)
         cookies.setAcceptThirdPartyCookies(web, false)
@@ -163,6 +178,14 @@ class InstagramBrowserActivity : Activity() {
             }
         }
         handler.postDelayed({ finishFailure("IG_BROWSER_EMPTY") }, 45000)
+    }
+
+    private fun startInspection() {
+        loaded = true
+        bar.isIndeterminate = true
+        label.text = "Lecture des médias après JavaScript…\nAucun compte connecté · délai maximal 45 s"
+        web.evaluateJavascript(script, null)
+        if (!polling) { polling = true; poll() }
     }
 
     private fun poll() {
