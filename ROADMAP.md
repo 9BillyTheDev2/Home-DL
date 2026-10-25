@@ -1,8 +1,8 @@
 # Home-DL — Roadmap et suivi
 
-Mis à jour le 24 octobre 2026.
+Mis à jour le 25 octobre 2026.
 
-**État actuel :** v0.2.1 signée et publiée, compatible avec la signature de v0.2.0. Compilation, tests et lint réussis. Quatre photos 1440 × 1920 et une vidéo téléchargées avec le code Kotlin hors téléphone. Le refus utilisateur sur 0.2.0 n’a pas été reproduit dans cet environnement ; résultat de la correction et parcours de mise à jour sur téléphone encore attendus.
+**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.2 prépare une trace locale pour identifier les étapes en échec.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -147,3 +147,10 @@ Correction des limites confirmées : requête publique par shortcode utilisée p
 Code Kotlin de production compilé et testé localement sur le lien exact avec le routage réseau standard de l’environnement : quatre photos téléchargées et formats vérifiés, 1440 × 1920, tailles 403184 / 383260 / 248864 / 268766 octets. Les fichiers d’image n’ont pas été conservés. Source et réponses de l’utilisateur uniquement dans les fichiers temporaires locaux, jamais dans les tests ou journaux GitHub publics. Exécution 40136132751 réussie sur df1fa4ab5b632d31fad30c732ac4a1686df33db8 : tests JVM, assembleRelease et lintRelease, vérification de signature et publication v0.2.1. La vidéo de régression publique a également été téléchargée avec le même code Kotlin (918120 octets, MP4 vérifié). Première mise à jour via l’app et confirmation du résultat sur téléphone restent à valider.
 
 Après publication 0.2.1 : route de mise à jour de l’app accessible, versionCode 8, APK de 65 048 088 octets, SHA-256 dab50262f2d38059c628a850adb02df29f7c21d78596d76b24c2dc9842210061 vérifié. Signature v2 validée avec apksig 8.7.3, certificat permanent identique à celui de 0.2.0. Aucun lien utilisateur dans le code, les tests, les notes de release ou les journaux Actions. Les réponses temporaires de la publication ont été supprimées.
+
+
+## En préparation — 0.2.2, traces locales
+
+Trace par opération, uniquement en mémoire, bornée à 64 événements, effacée au début de l’opération suivante et à la fermeture du processus. Étapes Instagram (référence, session, accès, shortcode, Polaris, parsing), moteur pour X/TikTok, téléchargement, durée relative, codes HTTP, type de réponse limité à des catégories fixes, tailles et nombre/type de médias. Aucun URL, cookie, jeton, corps de réponse ou en-tête brut dans la trace. Rapport disponible après analyse réussie comme après échec pour comparaison ; copie volontaire uniquement. Les diagnostics précédents ne peuvent pas être enrichis rétroactivement.
+
+Cinq tests nouveaux : phase exacte d’un HTTP_404, exclusion des contenus privés, taille maximale/réinitialisation, isolation entre threads, rapport de succès/vide. Suite locale ciblée de 29 tests réussie ; compilation Android et publication à confirmer. Aucun nouveau mode d’extraction, serveur ou connexion sociale ajouté. Prochaines étapes : comparer les rapports sur téléphone, récupération des photos X/TikTok, progression visuelle analyse/téléchargement.

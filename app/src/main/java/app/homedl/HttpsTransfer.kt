@@ -51,6 +51,7 @@ object HttpsTransfer {
                     connection.outputStream.use { it.write(form) }
                 }
                 val code = connection.responseCode
+                AnalysisTrace.http(code, connection.contentType, connection.contentLengthLong)
                 // CookieManager is scoped to one analysis, never global or persisted.
                 cookies?.put(url.toURI(), connection.headerFields.filterKeys { it != null })
                 if (code in listOf(301, 302, 303, 307, 308)) {
@@ -60,7 +61,7 @@ object HttpsTransfer {
                         error("Login required or human verification requested")
                     }
                 } else {
-                    check(code == 200) { "HTTP Error " + code }
+                    if (code != 200) throw HttpStatusException(code)
                     val length = connection.contentLengthLong
                     require(length <= limit) { "Response too large" }
                     var total = 0L
@@ -77,6 +78,7 @@ object HttpsTransfer {
                         }
                     }
                     require(length < 0 || total == length) { "Incomplete response" }
+                    AnalysisTrace.bytes(total)
                     return total
                 }
             } finally { connection.disconnect() }

@@ -73,7 +73,14 @@ object Diagnostics {
         return prefix + " — " + info.code + " • " + info.message
     }
 
-    fun report(stage: Stage, error: Throwable, appVersion: String, engineVersion: String, platform: String): String {
+    fun analysisSuccess(appVersion: String, engineVersion: String, platform: String, count: Int): String =
+        "HOME-DL / DIAGNOSTIC\nApplication : $appVersion\nMoteur : $engineVersion" +
+            "\nPlateforme : $platform\nÉtape : ANALYZE\nCode : " + (if (count > 0) "OK" else "EMPTY") +
+            "\nMédias détectés : $count\n\nTRACE LOCALE (étapes techniques)\n" + AnalysisTrace.snapshot() +
+            "\n\nDiagnostic local. Relisez ce texte avant de le partager."
+
+    fun report(stage: Stage, error: Throwable, appVersion: String, engineVersion: String, platform: String,
+               trace: String = AnalysisTrace.snapshot()): String {
         val errors = messages(error)
         // Parser exceptions can embed entire private media metadata: never copy their messages.
         val excerpt = if (errors.any { it is EngineOutputException || it.javaClass.name == "org.json.JSONException" })
@@ -84,6 +91,7 @@ object Diagnostics {
             "\nMoteur : " + engineVersion +
             "\nPlateforme : " + platform + "\nÉtape : " + stage.name +
             "\nCode : " + classify(error).code + "\n\n" + excerpt +
+            (if (trace.isBlank()) "" else "\n\nTRACE LOCALE (étapes techniques)\n" + trace) +
             "\n\nDiagnostic local. Relisez ce texte avant de le partager."
     }
 

@@ -254,11 +254,13 @@ class MainActivity : Activity() {
         }, timeoutSeconds, TimeUnit.SECONDS)
         worker.submit {
             var currentStage = if (initialize) Stage.INIT else stage
+            AnalysisTrace.start()
             try {
-                if (initialize) extractor.init()
+                if (initialize) AnalysisTrace.step(AnalysisTrace.Step.ENGINE_INIT) { extractor.init() }
                 currentStage = stage
                 if (token.get()) throw InterruptedException()
-                action(id, token)
+                if (stage == Stage.DOWNLOAD) AnalysisTrace.step(AnalysisTrace.Step.MEDIA_DOWNLOAD) { action(id, token) }
+                else action(id, token)
             } catch (e: Exception) {
                 val diagnostic = if (token.get()) "STOP • Opération arrêtée (annulation ou délai dépassé)."
                     else Diagnostics.describe(currentStage, e)
@@ -272,6 +274,7 @@ class MainActivity : Activity() {
                     status.text = diagnostic
                 }
             } finally {
+                AnalysisTrace.clear()
                 deadline.cancel(false)
                 ui {
                     busy = false; operation = null
@@ -296,7 +299,10 @@ class MainActivity : Activity() {
         begin("Analyse en cours…", 120, Stage.ANALYZE, initialize = Links.platform(url) != "Instagram") { id, token ->
             val found = extractor.analyze(url, id, token)
             if (token.get()) throw InterruptedException()
+            val report = Diagnostics.analysisSuccess(appVersion(), engineUpdates.version(), Links.platform(url), found.size)
             ui {
+                lastDiagnostic = report
+                screen.diagnostic.visibility = View.VISIBLE
                 status.text = if (found.isEmpty()) "Aucun média exploitable détecté."
                     else "${found.size} média(s) détecté(s). Sélectionnez les éléments."
                 screen.setMediaCount(found.size)

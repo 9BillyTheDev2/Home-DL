@@ -108,3 +108,8 @@ Exécution 40127772969 réussie : testDebugUnitTest, assembleRelease et lintRele
 Nouveaux tests : enveloppe shortcode et carrousel de quatre photos, enveloppe Polaris, erreurs data:null, résumé sans métadonnées, refus de public ou de limitation sans alternative, erreur de post différent. Fixtures synthétiques ; aucun shortcode, lien ou réponse du propriétaire dans le dépôt ou les journaux Actions. Compilation Android et publication confirmées ci-dessous.
 
 Résultat 0.2.1 : exécution 40136132751 réussie sur df1fa4ab5b632d31fad30c732ac4a1686df33db8, 37 tests JVM dans les sources, assembleRelease et lintRelease réussis. La vidéo publique de régression a été analysée et téléchargée avec le code Kotlin compilé localement (918120 octets). Release v0.2.1 publiée ; manifeste latest version 8/0.2.1 et URL vérifiés, APK réellement téléchargée (65048088 octets), SHA-256 conforme aux métadonnées de release et au manifeste. Signature v2 et empreinte de certificat permanent vérifiées avec apksig 8.7.3. Le parcours Android de mise à jour et l’analyse depuis le téléphone restent à confirmer. Les réponses Instagram temporaires ont été supprimées ; aucun média utilisateur conservé.
+
+
+## Préparation 0.2.2 — diagnostic des analyses
+
+Cinq tests AnalysisTrace couvrent la phase du 404, la confidentialité (messages d’exception et paramètres de Content-Type exclus), la limite de 64 lignes, le nettoyage, l’isolation entre threads et les analyses réussies/vides. Les tests sont synthétiques, sans lien utilisateur ni requête réseau. 29 tests locaux ciblés réussis après le dernier changement ; compilation Android à confirmer. Les traces n’ajoutent pas de récupération de photos X/TikTok et ne démontrent pas que les refus Instagram sont corrigés.

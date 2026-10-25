@@ -37,14 +37,14 @@ object InstagramPublic {
     fun cdn(host: String) = host.endsWith(".cdninstagram.com") || host.endsWith(".fbcdn.net")
 
     fun analyze(source: String, token: AtomicBoolean): List<Media> {
-        val shortcode = reference(source)
+        val shortcode = AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_REFERENCE) { reference(source) }
         val id = mediaId(shortcode)
         val deadline = System.nanoTime() + 90_000_000_000L
         val cookies = CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER)
         fun read(url: String, headers: Map<String, String> = emptyMap(), form: ByteArray? = null) =
             HttpsTransfer.bytes(url, 8 * 1024 * 1024, token, deadline,
                 { it == "www.instagram.com" }, headers, form, cookies).toString(Charsets.UTF_8)
-        val html = read(ROOT)
+        val html = AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_SESSION) { read(ROOT) }
         val lsd = Regex("""\["LSD",\[\],\{"token":"([^"]+)"""").find(html)?.groupValues?.get(1)
             ?: run {
                 val eqmc = Regex("""<script\b[^>]*\bid="__eqmc"[^>]*>(.*?)</script>""", RegexOption.DOT_MATCHES_ALL)
@@ -56,7 +56,9 @@ object InstagramPublic {
         check(!csrf.isNullOrBlank()) { "Anonymous CSRF cookie unavailable; extraction failed" }
         val headers = mapOf("X-IG-App-ID" to "936619743392459", "Origin" to ROOT.removeSuffix("/"),
             "X-CSRFToken" to csrf, "Accept" to "application/json", "X-Requested-With" to "XMLHttpRequest")
-        val ruling = parse(read(ROOT + "api/v1/web/get_ruling_for_content/?content_type=MEDIA&target_id=" + id, headers))
+        val ruling = AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_ACCESS) {
+            parse(read(ROOT + "api/v1/web/get_ruling_for_content/?content_type=MEDIA&target_id=" + id, headers))
+        }
         check(ruling.optString("status") == "ok") {
             // Do not reproduce server titles/account information in the exception.
             "Public access not granted; login required or audience restricted"
@@ -78,15 +80,16 @@ object InstagramPublic {
                 "Referer" to ROOT + "p/" + shortcode + "/"), form))
             return InstagramResponse.product(response, strategy, shortcode, id)
         }
-        val product = try { query(InstagramQuery.SHORTCODE) }
+        val product = try { AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_SHORTCODE) { query(InstagramQuery.SHORTCODE) } }
         catch (first: InstagramFailure) {
             if (!InstagramResponse.canTryAlternative(first)) throw first
-            try { query(InstagramQuery.POLARIS) }
+            try { AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_POLARIS) { query(InstagramQuery.POLARIS) } }
             catch (second: InstagramFailure) {
                 throw InstagramFailure(second.category, first.summary + " | " + second.summary)
             }
         }
-        return media(source, product)
+        return AnalysisTrace.step(AnalysisTrace.Step.MEDIA_PARSE) { media(source, product) }
+            .also { AnalysisTrace.media(it) }
     }
 
     private fun parse(text: String): JSONObject = try { JSONObject(text) }

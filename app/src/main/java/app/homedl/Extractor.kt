@@ -26,8 +26,10 @@ class Extractor(private val context: Context) {
         if (Links.platform(url) == "Instagram") return InstagramPublic.analyze(url, token)
         val req = request(url).addOption("--dump-single-json")
             .addOption("--skip-download").addOption("--no-flat-playlist")
-        val output = YoutubeDL.execute(req, id, null).out
-        return try { MediaParser.parse(url, output) }
+        val output = AnalysisTrace.step(AnalysisTrace.Step.ENGINE_ANALYZE) { YoutubeDL.execute(req, id, null).out }
+        AnalysisTrace.bytes(output.toByteArray(Charsets.UTF_8).size.toLong())
+        return try { AnalysisTrace.step(AnalysisTrace.Step.MEDIA_PARSE) { MediaParser.parse(url, output) }
+            .also { AnalysisTrace.media(it) } }
         catch (_: org.json.JSONException) { throw EngineOutputException(output.length) }
     }
 
