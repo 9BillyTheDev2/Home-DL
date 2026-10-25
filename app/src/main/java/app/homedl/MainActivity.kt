@@ -39,6 +39,7 @@ class MainActivity : Activity() {
     private lateinit var automaticUpdates: Switch
     private val selected = linkedSetOf<Media>()
     private var lastDiagnostic: String? = null
+    private var browserSource: String? = null
     private var failed = false
     private var progressText = ""
     private var progressPercent: Int? = null
@@ -94,6 +95,8 @@ class MainActivity : Activity() {
         analyze.setOnClickListener { analyzeLink() }
         screen.clearLink.setOnClickListener {
             if (!busy) {
+                screen.browserInstagram.visibility = View.GONE
+                browserSource = null
                 screen.hideProgress()
                 link.text.clear()
                 items.removeAllViews()
@@ -105,6 +108,17 @@ class MainActivity : Activity() {
                 download.isEnabled = false
                 status.text = "Lien effacé. Prêt pour une nouvelle analyse."
                 link.requestFocus()
+            }
+        }
+        browserSource = savedInstanceState?.getString("browser_source")
+        if (browserSource != null) screen.browserInstagram.visibility = View.VISIBLE
+        screen.browserInstagram.setOnClickListener {
+            if (!busy) {
+                val source = browserSource ?: return@setOnClickListener
+                showProgress("Ouverture du navigateur local…")
+                @Suppress("DEPRECATION")
+                startActivityForResult(Intent(this, InstagramBrowserActivity::class.java)
+                    .putExtra(InstagramBrowserActivity.SOURCE, source), 7002)
             }
         }
         screen.diagnostic.setOnClickListener { showDiagnostic() }
@@ -274,6 +288,8 @@ class MainActivity : Activity() {
         lastDiagnostic = null
         screen.diagnostic.visibility = View.GONE
         screen.clearLink.isEnabled = false
+        screen.browserInstagram.visibility = View.GONE
+        browserSource = null
         val platform = Links.platform(link.text.toString())
         screen.setBusy(true)
         val id = UUID.randomUUID().toString()
@@ -315,6 +331,11 @@ class MainActivity : Activity() {
                     lastDiagnostic = report
                     screen.diagnostic.visibility = if (report == null) View.GONE else View.VISIBLE
                     status.text = diagnostic
+                    if (!token.get() && currentStage == Stage.ANALYZE && platform == "Instagram" &&
+                        e is InstagramFailure && e.category in setOf("IG_EMPTY", "IG_QUERY")) {
+                        browserSource = link.text.toString()
+                        screen.browserInstagram.visibility = View.VISIBLE
+                    }
                 }
             } finally {
                 AnalysisTrace.clear()
@@ -469,6 +490,54 @@ class MainActivity : Activity() {
     }
 
     private fun ui(action: () -> Unit) { runOnUiThread { if (!isDestroyed) action() } }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("browser_source", browserSource)
+        super.onSaveInstanceState(outState)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != 7002) return
+        val source = browserSource ?: return
+        val trace = data?.getStringExtra(InstagramBrowserActivity.TRACE).orEmpty().take(6000)
+        val raw = data?.getStringExtra(InstagramBrowserActivity.DATA)
+        try {
+            if (resultCode == RESULT_OK && raw != null) {
+                val found = InstagramBrowserResult.media(source, raw)
+                items.removeAllViews(); selected.clear()
+                found.forEach { addCard(it) }
+                screen.setMediaCount(found.size)
+                status.text = "${found.size} média(s) récupéré(s) par le navigateur local. Sélectionnez les éléments."
+                lastDiagnostic = Diagnostics.analysisSuccess(appVersion(), engineUpdates.version(), "Instagram", found.size) +
+                    "\n\nNAVIGATEUR LOCAL\n" + trace
+                screen.browserInstagram.visibility = View.GONE
+                showProgress("Analyse navigateur terminée · ${found.size} média(s)", 100)
+            } else {
+                val code = data?.getStringExtra(InstagramBrowserActivity.CODE).orEmpty()
+                val message = when (code) {
+                    "IG_BROWSER_ACCESS" -> "Instagram demande une connexion, un consentement ou une vérification. La session anonyme a été arrêtée."
+                    "IG_BROWSER_STOP" -> "Essai navigateur annulé."
+                    "IG_BROWSER_EMPTY" -> "La page n’a fourni aucun média exploitable dans le délai du navigateur."
+                    else -> "Le navigateur local n’a pas pu terminer. Consultez le diagnostic."
+                }
+                status.text = message
+                lastDiagnostic = (lastDiagnostic ?: "HOME-DL / DIAGNOSTIC\nApplication : " + appVersion()) +
+                    "\n\nNAVIGATEUR LOCAL\n" + code.takeIf { Regex("IG_BROWSER_[A-Z_]{1,30}").matches(it) }.orEmpty() + "\n" + trace
+                showProgress(message, 0)
+                screen.browserInstagram.visibility = View.VISIBLE
+                screen.showFailure()
+            }
+        } catch (_: Exception) {
+            status.text = "Réponse navigateur refusée : données invalides ou publication différente."
+            lastDiagnostic = "HOME-DL / DIAGNOSTIC\nApplication : " + appVersion() + "\nCode : IG_BROWSER_PARSE\n" + trace
+            showProgress("Réponse navigateur refusée", 0)
+            screen.showFailure()
+        }
+        screen.diagnostic.visibility = View.VISIBLE
+        download.isEnabled = selected.isNotEmpty()
+    }
 
     override fun onResume() {
         super.onResume()
