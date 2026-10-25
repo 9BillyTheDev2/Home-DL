@@ -2,7 +2,7 @@
 
 Mis à jour le 25 octobre 2026.
 
-**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.2 prépare une trace locale pour identifier les étapes en échec.
+**État actuel :** 0.2.1 installée confirmée par le propriétaire. Des analyses Instagram réussissent (dont un carrousel de 20 médias) et d’autres renvoient HTTP_404. Vidéos X/TikTok fonctionnelles selon ses essais ; photos non prises en charge. Priorité au fonctionnement sur téléphone, sans serveur intermédiaire ni connexion aux comptes. 0.2.2 publiée avec une trace locale pour identifier les étapes en échec.
 
 ## Dernière version testée — moteur et accès (0.1.5)
 
@@ -149,8 +149,10 @@ Code Kotlin de production compilé et testé localement sur le lien exact avec l
 Après publication 0.2.1 : route de mise à jour de l’app accessible, versionCode 8, APK de 65 048 088 octets, SHA-256 dab50262f2d38059c628a850adb02df29f7c21d78596d76b24c2dc9842210061 vérifié. Signature v2 validée avec apksig 8.7.3, certificat permanent identique à celui de 0.2.0. Aucun lien utilisateur dans le code, les tests, les notes de release ou les journaux Actions. Les réponses temporaires de la publication ont été supprimées.
 
 
-## En préparation — 0.2.2, traces locales
+## Suivi — 0.2.2, traces locales
 
 Trace par opération, uniquement en mémoire, bornée à 64 événements, effacée au début de l’opération suivante et à la fermeture du processus. Étapes Instagram (référence, session, accès, shortcode, Polaris, parsing), moteur pour X/TikTok, téléchargement, durée relative, codes HTTP, type de réponse limité à des catégories fixes, tailles et nombre/type de médias. Aucun URL, cookie, jeton, corps de réponse ou en-tête brut dans la trace. Rapport disponible après analyse réussie comme après échec pour comparaison ; copie volontaire uniquement. Les diagnostics précédents ne peuvent pas être enrichis rétroactivement.
 
-Cinq tests nouveaux : phase exacte d’un HTTP_404, exclusion des contenus privés, taille maximale/réinitialisation, isolation entre threads, rapport de succès/vide. Suite locale ciblée de 29 tests réussie ; compilation Android et publication à confirmer. Aucun nouveau mode d’extraction, serveur ou connexion sociale ajouté. Prochaines étapes : comparer les rapports sur téléphone, récupération des photos X/TikTok, progression visuelle analyse/téléchargement.
+Cinq tests nouveaux : phase exacte d’un HTTP_404, exclusion des contenus privés, taille maximale/réinitialisation, isolation entre threads, rapport de succès/vide. Suite locale ciblée de 29 tests réussie ; compilation Android et publication réussies (exécution 40178715899). Aucun nouveau mode d’extraction, serveur ou connexion sociale ajouté. Prochaines étapes : comparer les rapports sur téléphone, récupération des photos X/TikTok, progression visuelle analyse/téléchargement.
+
+Validation 0.2.2 : commit a290189f240321f84d0679290ed225c4065b2344, testDebugUnitTest (42 tests dans les sources), assembleRelease et lintRelease réussis. Le code Kotlin hors Android a reproduit le refus du lien fourni : session HTTP 200, contrôle d’accès HTTP 404 (JSON, 51 octets annoncés), trace conforme et sans URL. APK publiée de 65 059 300 octets, SHA-256 613541d424b4fd81677cffb578c5b6cd3dd9db219b63c1134130b3de0d895f71 ; route latest version 9/0.2.2 et signature v2/certificat permanent vérifiés sur le fichier réellement téléchargé. Rapport sur téléphone restant à valider.
