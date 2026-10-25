@@ -56,10 +56,14 @@ object InstagramPublic {
         check(!csrf.isNullOrBlank()) { "Anonymous CSRF cookie unavailable; extraction failed" }
         val headers = mapOf("X-IG-App-ID" to "936619743392459", "Origin" to ROOT.removeSuffix("/"),
             "X-CSRFToken" to csrf, "Accept" to "application/json", "X-Requested-With" to "XMLHttpRequest")
-        val ruling = AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_ACCESS) {
+        val ruling = try { AnalysisTrace.step(AnalysisTrace.Step.INSTAGRAM_ACCESS) {
             parse(read(ROOT + "api/v1/web/get_ruling_for_content/?content_type=MEDIA&target_id=" + id, headers))
         }
-        check(ruling.optString("status") == "ok") {
+        } catch (error: HttpStatusException) {
+            if (error.status != 404) throw error
+            null // Missing auxiliary response does not establish that the publication is missing.
+        }
+        check(ruling == null || ruling.optString("status") == "ok") {
             // Do not reproduce server titles/account information in the exception.
             "Public access not granted; login required or audience restricted"
         }

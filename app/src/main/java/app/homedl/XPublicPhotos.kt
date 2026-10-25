@@ -49,8 +49,22 @@ object XPublicPhotos {
 
     fun parse(source: String, json: JSONObject): List<Media> {
         val id = reference(source)
-        check(json.optString("id_str") == id) { "X photo response identity mismatch" }
-        val details = json.optJSONArray("mediaDetails") ?: error("No public photo data from X")
+        val summary = "empty=${json.length() == 0}; identity=${json.optString("id_str") == id}; " +
+            "mediaDetails=${json.optJSONArray("mediaDetails")?.length() ?: 0}; photos=${json.optJSONArray("photos")?.length() ?: 0}; video=${json.has("video")}"
+        if (json.length() == 0) throw XPhotoFailure("X_EMPTY", summary)
+        if (json.optString("id_str") != id) throw XPhotoFailure("X_IDENTITY", summary)
+        val details = json.optJSONArray("mediaDetails") ?: run {
+            // Some public embed responses expose photos directly; never use a video cover.
+            if (json.has("video")) throw XPhotoFailure("X_NO_PHOTOS", summary)
+            val photos = json.optJSONArray("photos") ?: throw XPhotoFailure("X_NO_PHOTOS", summary)
+            org.json.JSONArray().apply {
+                for (index in 0 until photos.length()) {
+                    val photo = photos.getJSONObject(index)
+                    put(JSONObject().put("type", "photo").put("media_url_https", photo.optString("url"))
+                        .put("original_info", JSONObject().put("width", photo.optInt("width")).put("height", photo.optInt("height"))))
+                }
+            }
+        }
         require(details.length() in 1..50) { "Unsupported X media count" }
         // Never silently omit a video or present its thumbnail as a photo.
         check((0 until details.length()).all { details.optJSONObject(it)?.optString("type") == "photo" }) {
@@ -79,3 +93,6 @@ object XPublicPhotos {
         return "https://pbs.twimg.com${match.groupValues[1]}?format=${match.groupValues[2]}&name=$size"
     }
 }
+
+/** Structural data only: no post identifiers, URLs or server messages. */
+class XPhotoFailure(val code: String, summary: String) : IllegalStateException("X $code; $summary")

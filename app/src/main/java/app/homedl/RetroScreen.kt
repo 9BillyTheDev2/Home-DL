@@ -43,6 +43,19 @@ class RetroScreen(private val activity: Activity) {
         visibility = View.GONE
         contentDescription = "Progression de la mise à jour"
     }
+    private val operationPanel = LinearLayout(activity).apply {
+        orientation = LinearLayout.VERTICAL
+        visibility = View.GONE
+        setPadding(dp(12), dp(8), dp(12), dp(8))
+        background = shape(PANEL, BORDER)
+    }
+    private val operationLabel = label("", 12f, TEXT)
+    private val operationBar = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
+        max = 100
+        progressTintList = ColorStateList.valueOf(GREEN)
+        indeterminateTintList = ColorStateList.valueOf(CYAN)
+        progressBackgroundTintList = ColorStateList.valueOf(BORDER)
+    }
     val items = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
     val download = Button(activity)
     val cancel = Button(activity)
@@ -236,6 +249,9 @@ class RetroScreen(private val activity: Activity) {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(10), 0, 0)
         }
+        operationPanel.addView(operationLabel)
+        operationPanel.addView(operationBar, LinearLayout.LayoutParams(-1, dp(16)))
+        actions.addView(operationPanel, spaced(-1, -2, 0, 8))
         decorateButton(download, "Télécharger la sélection", true)
         download.isEnabled = false
         actions.addView(download, LinearLayout.LayoutParams(-1, dp(54)))
@@ -249,6 +265,17 @@ class RetroScreen(private val activity: Activity) {
         })
         root.addView(actions)
     }
+
+    /** Pinned outside the scroll area, so progress stays visible above the action buttons. */
+    fun progress(message: String, percent: Int? = null) {
+        operationPanel.visibility = View.VISIBLE
+        operationLabel.text = message
+        operationBar.isIndeterminate = percent == null
+        if (percent != null) operationBar.progress = percent.coerceIn(0, 100)
+        operationBar.contentDescription = message
+    }
+
+    fun hideProgress() { operationPanel.visibility = View.GONE }
 
     fun showFailure() { phase.text = "OPÉRATION INTERROMPUE"; phase.setTextColor(ORANGE) }
 

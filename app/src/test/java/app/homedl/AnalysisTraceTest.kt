@@ -4,6 +4,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AnalysisTraceTest {
+    @Test fun progressObserverReceivesActualStepsAndIsCleared() {
+        val steps = mutableListOf<AnalysisTrace.Step>()
+        AnalysisTrace.start { steps.add(it) }
+        AnalysisTrace.step(AnalysisTrace.Step.MEDIA_PARSE) { 1 }
+        AnalysisTrace.clear()
+        AnalysisTrace.step(AnalysisTrace.Step.ENGINE_INIT) { 1 }
+        assertEquals(listOf(AnalysisTrace.Step.MEDIA_PARSE), steps)
+    }
+
     @Test fun successfulAnalysesCanBeComparedWithFailures() {
         AnalysisTrace.start()
         try {

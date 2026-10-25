@@ -39,6 +39,19 @@ class XPublicPhotosTest {
         }
     }
 
+    @Test fun directPhotoShapeUsesOnlyMatchingPublicPost() {
+        val data = JSONObject("""{"id_str":"1234567890123456789","photos":[{"url":"https://pbs.twimg.com/media/Sample.jpg","width":1200,"height":800}]}""")
+        assertEquals("1200 × 800", XPublicPhotos.parse(source, data).single().quality)
+        data.put("video", JSONObject())
+        assertThrows(XPhotoFailure::class.java) { XPublicPhotos.parse(source, data) }
+    }
+
+    @Test fun emptyResponseHasItsOwnDiagnosisWithoutPostIdentifiers() {
+        val failure = assertThrows(XPhotoFailure::class.java) { XPublicPhotos.parse(source, JSONObject()) }
+        assertEquals("X_EMPTY", Diagnostics.classify(failure).code)
+        assertFalse(failure.message!!.contains("1234567890123456789"))
+    }
+
     @Test fun supportedStatusRoutesKeepThePostId() {
         for (url in listOf(source, source + "/photo/1?s=20", "https://twitter.com/i/web/status/1234567890123456789"))
             assertEquals("1234567890123456789", XPublicPhotos.reference(url))

@@ -40,6 +40,9 @@ class MainActivity : Activity() {
     private val selected = linkedSetOf<Media>()
     private var lastDiagnostic: String? = null
     private var failed = false
+    private var progressText = ""
+    private var progressPercent: Int? = null
+    private var progressStarted = 0L
     @Volatile private var busy = false
     @Volatile private var operation: String? = null
     private var cancelled = AtomicBoolean(false)
@@ -91,6 +94,7 @@ class MainActivity : Activity() {
         analyze.setOnClickListener { analyzeLink() }
         screen.clearLink.setOnClickListener {
             if (!busy) {
+                screen.hideProgress()
                 link.text.clear()
                 items.removeAllViews()
                 selected.clear()
@@ -150,6 +154,9 @@ class MainActivity : Activity() {
         appChecking = true
         screen.updateApp.isEnabled = false
         screen.appUpdateStatus.text = "Recherche d’une nouvelle version…"
+        screen.appUpdateProgress.isIndeterminate = true
+        screen.appUpdateProgress.visibility = View.VISIBLE
+        if (!busy) screen.progress("Recherche d’une nouvelle version…")
         appChecks.submit {
             try {
                 val release = appUpdates.check(appCheckToken)
@@ -163,7 +170,11 @@ class MainActivity : Activity() {
             } catch (_: Exception) {
                 ui { screen.appUpdateStatus.text = "Vérification de l’app indisponible. Vous pouvez réessayer ici." }
             } finally {
-                ui { appChecking = false; screen.updateApp.isEnabled = !busy }
+                ui {
+                    appChecking = false; screen.updateApp.isEnabled = !busy
+                    screen.appUpdateProgress.visibility = View.GONE
+                    if (!busy) screen.progress(screen.appUpdateStatus.text.toString(), 100)
+                }
             }
         }
     }
@@ -171,6 +182,7 @@ class MainActivity : Activity() {
     private fun downloadApp(release: AppRelease) {
         begin("Téléchargement de Home-DL " + release.versionName + "…", 200, Stage.UPDATE, initialize = false) { _, token ->
             ui {
+                screen.appUpdateProgress.isIndeterminate = false
                 screen.appUpdateProgress.progress = 0
                 screen.appUpdateProgress.visibility = View.VISIBLE
                 screen.appUpdateStatus.text = "Connexion au serveur de mise à jour… 0 %"
@@ -178,6 +190,7 @@ class MainActivity : Activity() {
             }
             try {
                 appUpdates.download(release, token) { percent -> ui {
+                    showProgress("Mise à jour : $percent %", percent)
                     screen.appUpdateProgress.progress = percent
                     val message = if (percent == 100) "Téléchargement : 100 %. Vérification de l’APK…"
                         else "Téléchargement de Home-DL ${release.versionName} : $percent %"
@@ -272,12 +285,19 @@ class MainActivity : Activity() {
         screen.updateApp.isEnabled = false
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         status.text = message
+        progressStarted = android.os.SystemClock.elapsedRealtime()
+        showProgress(message)
+        val ticker = timer.scheduleAtFixedRate({ ui {
+            if (operation == id) renderProgress()
+        } }, 1, 1, TimeUnit.SECONDS)
         val deadline = timer.schedule({
             token.set(true); extractor.cancel(id)
         }, timeoutSeconds, TimeUnit.SECONDS)
         worker.submit {
             var currentStage = if (initialize) Stage.INIT else stage
-            AnalysisTrace.start()
+            AnalysisTrace.start { step -> ui {
+                if (operation == id && stage != Stage.DOWNLOAD) showProgress(stepLabel(step))
+            } }
             try {
                 if (initialize) AnalysisTrace.step(AnalysisTrace.Step.ENGINE_INIT) { extractor.init() }
                 currentStage = stage
@@ -299,7 +319,11 @@ class MainActivity : Activity() {
             } finally {
                 AnalysisTrace.clear()
                 deadline.cancel(false)
+                ticker.cancel(false)
                 ui {
+                    if (token.get()) showProgress("Opération arrêtée", 0)
+                    else if (failed) showProgress("Échec — ouvrez le diagnostic", 0)
+                    else showProgress(status.text.toString(), 100)
                     busy = false; operation = null
                     screen.setBusy(false)
                     if (failed) screen.showFailure()
@@ -395,11 +419,20 @@ class MainActivity : Activity() {
             var saved = 0
             for (media in batch) {
                 if (token.get()) throw InterruptedException()
+                val fileNumber = saved + 1
                 val directory = File(cacheDir, "download-${UUID.randomUUID()}").apply { mkdirs() }
                 try {
+                    ui { showProgress("Connexion — fichier ${fileNumber}/${batch.size}") }
                     val file = extractor.download(media, directory, id, token) { percent ->
-                        ui { status.text = "Fichier ${saved + 1}/${batch.size} • ${percent.toInt().coerceIn(0, 100)} %" }
+                        ui {
+                            val known = percent.isFinite() && percent >= 0
+                            val value = percent.toInt().coerceIn(0, 100)
+                            val message = "Fichier ${fileNumber}/${batch.size}" + if (known) " • $value %" else " • taille inconnue"
+                            status.text = message
+                            showProgress(message, if (known) value else null)
+                        }
                     }
+                    ui { showProgress("Enregistrement — fichier ${fileNumber}/${batch.size}") }
                     MediaStoreWriter.save(applicationContext, file) { token.get() }
                     saved++
                     ui { status.text = "${saved}/${batch.size} fichier(s) enregistré(s)." }
@@ -407,6 +440,32 @@ class MainActivity : Activity() {
             }
             ui { status.text = "Terminé : ${saved} fichier(s) dans Téléchargements / Home-DL." }
         }
+    }
+
+    private fun showProgress(message: String, percent: Int? = null) {
+        progressText = message
+        progressPercent = percent
+        renderProgress()
+    }
+
+    private fun renderProgress() {
+        val elapsed = ((android.os.SystemClock.elapsedRealtime() - progressStarted) / 1000).coerceAtLeast(0)
+        screen.progress(progressText + if (busy) " · ${elapsed}s" else "", progressPercent)
+    }
+
+    private fun stepLabel(step: AnalysisTrace.Step): String = when (step) {
+        AnalysisTrace.Step.ENGINE_INIT -> "Initialisation du moteur…"
+        AnalysisTrace.Step.INSTAGRAM_REFERENCE -> "Lecture du lien Instagram…"
+        AnalysisTrace.Step.INSTAGRAM_SESSION -> "Ouverture de la session publique Instagram…"
+        AnalysisTrace.Step.INSTAGRAM_ACCESS -> "Vérification de la réponse Instagram…"
+        AnalysisTrace.Step.INSTAGRAM_SHORTCODE -> "Recherche des médias Instagram (1/2)…"
+        AnalysisTrace.Step.INSTAGRAM_POLARIS -> "Recherche des médias Instagram (2/2)…"
+        AnalysisTrace.Step.ENGINE_ANALYZE -> "Analyse des médias…"
+        AnalysisTrace.Step.X_PUBLIC_PHOTOS -> "Recherche des photos X…"
+        AnalysisTrace.Step.TIKTOK_RESOLVE -> "Résolution du lien TikTok…"
+        AnalysisTrace.Step.TIKTOK_PUBLIC_PHOTOS -> "Recherche des photos TikTok…"
+        AnalysisTrace.Step.MEDIA_PARSE -> "Préparation de la sélection…"
+        AnalysisTrace.Step.MEDIA_DOWNLOAD -> "Préparation du téléchargement…"
     }
 
     private fun ui(action: () -> Unit) { runOnUiThread { if (!isDestroyed) action() } }

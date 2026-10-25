@@ -5,10 +5,10 @@ object AnalysisTrace {
     enum class Step { ENGINE_INIT, INSTAGRAM_REFERENCE, INSTAGRAM_SESSION, INSTAGRAM_ACCESS,
         INSTAGRAM_SHORTCODE, INSTAGRAM_POLARIS, ENGINE_ANALYZE, X_PUBLIC_PHOTOS,
         TIKTOK_RESOLVE, TIKTOK_PUBLIC_PHOTOS, MEDIA_PARSE, MEDIA_DOWNLOAD }
-    private class Session(val started: Long = System.nanoTime(), val lines: MutableList<String> = mutableListOf())
+    private class Session(val observer: (Step) -> Unit, val started: Long = System.nanoTime(), val lines: MutableList<String> = mutableListOf())
     private val current = ThreadLocal<Session>()
 
-    fun start() { current.set(Session()) }
+    fun start(observer: (Step) -> Unit = {}) { current.set(Session(observer)) }
     fun clear() { current.remove() }
 
     private fun add(message: String) {
@@ -20,6 +20,7 @@ object AnalysisTrace {
     }
 
     fun <T> step(step: Step, action: () -> T): T {
+        current.get()?.observer?.invoke(step)
         add("${step.name} BEGIN")
         try {
             val result = action()

@@ -45,6 +45,7 @@ class Extractor(private val context: Context) {
     fun download(media: Media, directory: File, id: String, token: AtomicBoolean, progress: (Float) -> Unit): File {
         if (media.directUrl != null) {
             val target = File(directory, if (media.kind == MediaKind.PHOTO) "media.jpg" else "media.mp4")
+            var lastPercent = -2
             target.outputStream().use { out ->
                 HttpsTransfer.stream(media.directUrl, 1024L * 1024 * 1024, token,
                     System.nanoTime() + 1_800_000_000_000L, { host ->
@@ -60,7 +61,8 @@ class Extractor(private val context: Context) {
                         "TikTok" -> "https://www.tiktok.com/"
                         else -> "https://www.instagram.com/"
                     })) { total, size ->
-                    if (size > 0) progress(total * 100f / size)
+                    val percent = if (size > 0) (total * 100 / size).toInt().coerceIn(0, 100) else -1
+                    if (percent != lastPercent) { lastPercent = percent; progress(percent.toFloat()) }
                 }
             }
             return MediaValidation.check(target, media.kind)

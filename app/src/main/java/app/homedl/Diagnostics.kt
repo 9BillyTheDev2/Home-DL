@@ -9,6 +9,11 @@ object Diagnostics {
     private fun messages(error: Throwable) = generateSequence(error) { it.cause }.take(5).toList()
 
     fun classify(error: Throwable): FailureInfo {
+        if (error is XPhotoFailure) return FailureInfo(error.code, when (error.code) {
+            "X_EMPTY" -> "X a renvoyé une réponse vide. Cela ne permet pas de connaître la disponibilité de la publication."
+            "X_IDENTITY" -> "La réponse X ne correspond pas à la publication ; aucun fichier n’a été accepté."
+            else -> "La réponse publique X ne contient aucune photo exploitable."
+        })
         if (error is InstagramFailure) return FailureInfo(error.category, when (error.category) {
             "IG_RATE" -> "Instagram limite les requêtes. Attendez avant de réessayer."
             "IG_ACCESS" -> "Instagram refuse cet accès anonyme. Aucun contournement n’a été tenté."
