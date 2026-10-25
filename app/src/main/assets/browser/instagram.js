@@ -19,6 +19,7 @@
   const cleanItem = x => {
     if (!x || typeof x !== 'object') return null;
     const old = typeof x.is_video === 'boolean';
+    if (!old && x.media_type !== 1 && x.media_type !== 2) return null;
     const video = x.media_type === 2 || x.is_video === true || (Array.isArray(x.video_versions) && x.video_versions.length > 0);
     let photos = variants(x.image_versions2 && x.image_versions2.candidates);
     let videos = variants(x.video_versions);

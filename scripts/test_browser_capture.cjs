@@ -16,6 +16,7 @@ let result = run({data: {item: {code: 'ABC', pk: '66', ...photo}}});
 assert.equal(result.product.code, 'ABC');
 assert.equal(result.product.image_versions2.candidates[0].width, 1200);
 assert.equal(run({item: {code: 'OTHER', ...photo}}).product, null);
+assert.equal(run({item: {code: 'ABC', image_versions2: photo.image_versions2}}).product, null);
 assert.equal(run({item: {code: 'ABC', media_type: 2, image_versions2: photo.image_versions2}}).product, null);
 assert.equal(run({item: {code: 'ABC', carousel_media: [photo, {media_type: 2}]}}).product, null);
 assert.equal(run({item: {code: 'ABC', ...photo, image_versions2: {candidates: [{url:'https://evil.invalid/a.jpg'}]}}}).product, null);
@@ -25,7 +26,7 @@ assert.equal(JSON.stringify(result).includes('PRIVATE_AUTHOR'), false);
 result = run({data:{shortcode:'ABC', is_video:true, video_url:'https://test.cdninstagram.com/video.mp4', display_url:'https://test.cdninstagram.com/cover.jpg', dimensions:{width:720,height:1280}}});
 assert.equal(result.product.media_type, 2);
 assert.equal(result.product.video_versions[0].height, 1280);
-console.log('Browser capture: 7 synthetic scenarios passed');
+console.log('Browser capture: 8 synthetic scenarios passed');
 (async () => {
   const payload = {data:{item:{code:'ABC',pk:'66',...photo}}, private:'PRIVATE_RESPONSE'};
   const context = { URL, TextDecoder, Uint8Array, WeakSet,
