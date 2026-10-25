@@ -170,12 +170,35 @@ class MainActivity : Activity() {
 
     private fun downloadApp(release: AppRelease) {
         begin("Téléchargement de Home-DL " + release.versionName + "…", 200, Stage.UPDATE, initialize = false) { _, token ->
-            appUpdates.download(release, token) { percent -> ui { status.text = "Mise à jour Home-DL : " + percent + " %" } }
-            if (token.get()) throw InterruptedException()
             ui {
-                screen.updateApp.text = "Installer la mise à jour téléchargée"
-                screen.appUpdateStatus.text = "APK vérifiée : version, intégrité et signature."
-                status.text = "Mise à jour prête. Appuyez sur Installer pour continuer."
+                screen.appUpdateProgress.progress = 0
+                screen.appUpdateProgress.visibility = View.VISIBLE
+                screen.appUpdateStatus.text = "Connexion au serveur de mise à jour… 0 %"
+                screen.updateApp.text = "Téléchargement en cours…"
+            }
+            try {
+                appUpdates.download(release, token) { percent -> ui {
+                    screen.appUpdateProgress.progress = percent
+                    val message = if (percent == 100) "Téléchargement : 100 %. Vérification de l’APK…"
+                        else "Téléchargement de Home-DL ${release.versionName} : $percent %"
+                    screen.appUpdateStatus.text = message
+                    status.text = message
+                } }
+                if (token.get()) throw InterruptedException()
+                ui {
+                    screen.appUpdateProgress.progress = 100
+                    screen.updateApp.text = "Installer la mise à jour téléchargée"
+                    screen.appUpdateStatus.text = "APK vérifiée. Appuyez sur Installer ; Android demandera confirmation."
+                    status.text = "Mise à jour prête. Appuyez sur Installer pour continuer."
+                }
+            } catch (error: Exception) {
+                ui {
+                    screen.appUpdateStatus.text = if (token.get()) "Téléchargement arrêté. Vous pouvez réessayer."
+                        else Diagnostics.describe(Stage.UPDATE, error)
+                    screen.updateApp.text = "Réessayer le téléchargement"
+                    screen.appUpdateProgress.visibility = View.GONE
+                }
+                throw error
             }
         }
     }

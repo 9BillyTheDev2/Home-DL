@@ -36,6 +36,13 @@ class RetroScreen(private val activity: Activity) {
     val updateApp = Button(activity)
     val automaticAppUpdates = Switch(activity)
     val appUpdateStatus = TextView(activity)
+    val appUpdateProgress = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
+        max = 100
+        isIndeterminate = false
+        progressTintList = android.content.res.ColorStateList.valueOf(CYAN)
+        visibility = View.GONE
+        contentDescription = "Progression de la mise à jour"
+    }
     val items = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
     val download = Button(activity)
     val cancel = Button(activity)
@@ -89,6 +96,9 @@ class RetroScreen(private val activity: Activity) {
             setPadding(0, 0, 0, dp(8))
         }
         appPanel.addView(appUpdateStatus)
+        appPanel.addView(appUpdateProgress, LinearLayout.LayoutParams(-1, dp(12)).apply {
+            bottomMargin = dp(12)
+        })
         decorateButton(updateApp, "Vérifier la mise à jour de l’app", false)
         appPanel.addView(updateApp, LinearLayout.LayoutParams(-1, -2))
 

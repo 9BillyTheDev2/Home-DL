@@ -50,11 +50,15 @@ class AppUpdates(private val context: Context) {
         val directory = apk.parentFile!!.apply { mkdirs() }
         val part = File(directory, "Home-DL.part")
         apk.delete()
+        var lastPercent = 0
+        progress(0)
         try {
             part.outputStream().use { output ->
                 val total = HttpsTransfer.stream(release.url, release.size, token,
-                    System.nanoTime() + 180_000_000_000L, ::trusted, output) { count, size ->
-                    if (size > 0) progress((count * 100 / size).toInt().coerceIn(0, 100))
+                    System.nanoTime() + 180_000_000_000L, ::trusted, output) { count, _ ->
+                    // The verified release manifest provides a size even without Content-Length.
+                    val percent = (count * 100 / release.size).toInt().coerceIn(0, 100)
+                    if (percent != lastPercent) { lastPercent = percent; progress(percent) }
                 }
                 require(total == release.size) { "Incomplete application update" }
             }
