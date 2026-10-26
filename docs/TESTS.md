@@ -184,3 +184,10 @@ Validation 0.2.7 : exécution 40235097810 réussie sur 08120c6ce0531f434888f25c2
 ## Retrait du navigateur local — 26 octobre 2026
 
 Suppression du code WebView et de ses tests/assets dédiés, des points d’entrée MainActivity/RetroScreen, de l’activité du manifeste, de la dépendance WebKit et de l’étape CI JavaScript devenue sans objet. Vérifier l’absence de proposition navigateur après une analyse Instagram en échec ; conserver diagnostic, progression, analyse directe et téléchargement. Compilation Android et tests existants à exécuter ; aucune nouvelle APK publiée à cette étape. Les descriptions navigateur précédentes sont historiques.
+
+
+## 0.2.8 — paramètres et aperçus
+
+Les mises à jour de l’application et du moteur sont regroupées dans Paramètres. Vérifications automatiques conservées, mise à jour moteur sans réinstallation, confirmation Android toujours obligatoire pour l’APK. Le panneau s’ouvre si une version APK est disponible ou déjà téléchargée. Retrait de l’interrupteur d’animation : pluie de code active, suspendue en arrière-plan et respectant les animations système. Retrait complet du navigateur local inclus.
+
+Aperçus : transferts HTTPS bornés à 8 Mio, redirections contrôlées sur CDN autorisés, Referer de plateforme sans cookie, réduction avant décodage et repli sur l’image originale pour une photo uniquement. État de chargement, absence d’aperçu et bouton Réessayer visibles. Anciennes requêtes invalidées après nouvelle analyse, effacement ou fermeture. Les erreurs d’aperçu ne bloquent pas la sélection. Ces défauts du code ne prouvent pas la cause des captures manquantes signalées. Trois tests de politique ajoutés : CDN/HTTPS, repli photo sans substitution vidéo, dimensions et en-têtes. Compilation, tests Android/lint et essai appareil à consigner ; aucun nouveau succès d’extraction Instagram revendiqué.

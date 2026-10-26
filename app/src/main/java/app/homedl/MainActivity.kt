@@ -9,8 +9,6 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -19,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MainActivity : Activity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val previews = Executors.newFixedThreadPool(2)
+    private var previewToken = AtomicBoolean(false)
     private val timer = Executors.newSingleThreadScheduledExecutor()
     private val appChecks = Executors.newSingleThreadExecutor()
     private val appCheckToken = AtomicBoolean(false)
@@ -95,6 +94,7 @@ class MainActivity : Activity() {
         screen.clearLink.setOnClickListener {
             if (!busy) {
                 screen.hideProgress()
+                resetPreviews()
                 link.text.clear()
                 items.removeAllViews()
                 selected.clear()
@@ -162,6 +162,7 @@ class MainActivity : Activity() {
                 val release = appUpdates.check(appCheckToken)
                 ui {
                     availableRelease = release
+                    if (release != null) screen.openSettings()
                     screen.appUpdateStatus.text = if (release == null) "Version " + appVersion() + " · aucune version plus récente publiée."
                         else "Nouvelle version disponible : " + release.versionName
                     screen.updateApp.text = if (release == null) "Vérifier la mise à jour de l’app"
@@ -342,6 +343,7 @@ class MainActivity : Activity() {
     private fun analyzeLink() {
         val url = try { Links.parse(link.text.toString()) } catch (e: Exception) { status.text = e.message; return }
         link.setSelection(0)
+        resetPreviews()
         items.removeAllViews(); selected.clear(); screen.setMediaCount(0)
         begin("Analyse en cours…", 120, Stage.ANALYZE, initialize = Links.platform(url) != "Instagram") { id, token ->
             val found = extractor.analyze(url, id, token)
@@ -367,7 +369,16 @@ class MainActivity : Activity() {
             setBackgroundColor(RetroScreen.BACKGROUND); scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = if (media.kind == MediaKind.PHOTO) "Aperçu de la photo" else "Aperçu de la vidéo"
         }
-        box.addView(image, LinearLayout.LayoutParams(-1, dp(190)))
+        val previewFrame = FrameLayout(this)
+        previewFrame.addView(image, FrameLayout.LayoutParams(-1, -1))
+        val previewState = Button(this).apply {
+            isAllCaps = false
+            textSize = 13f
+            setTextColor(RetroScreen.MUTED)
+            setBackgroundColor(RetroScreen.BACKGROUND)
+        }
+        previewFrame.addView(previewState, FrameLayout.LayoutParams(-1, -1))
+        box.addView(previewFrame, LinearLayout.LayoutParams(-1, dp(190)))
         box.addView(CheckBox(this).apply {
             text = "${media.title}\n${media.quality}"; textSize = 16f
             screen.styleSelection(this)
@@ -377,36 +388,54 @@ class MainActivity : Activity() {
             }
         })
         items.addView(box)
-        media.preview?.let { url ->
-            previews.submit {
-                var connection: HttpURLConnection? = null
+        loadPreview(media, image, previewState)
+    }
+
+    private fun resetPreviews() {
+        previewToken.set(true)
+        previewToken = AtomicBoolean(false)
+    }
+
+    private fun loadPreview(media: Media, image: ImageView, state: Button) {
+        val token = previewToken
+        val candidates = PreviewPolicy.candidates(media)
+        state.visibility = View.VISIBLE
+        state.isEnabled = false
+        state.text = if (candidates.isEmpty()) "Aucun aperçu fourni · média sélectionnable"
+            else "Chargement de l’aperçu…"
+        if (candidates.isEmpty()) return
+        previews.submit {
+            var loaded: android.graphics.Bitmap? = null
+            val deadline = System.nanoTime() + 25_000_000_000L
+            for (address in candidates) {
+                if (token.get() || Thread.currentThread().isInterrupted) break
                 try {
-                    connection = URL(url).openConnection() as HttpURLConnection
-                    connection.connectTimeout = 10000; connection.readTimeout = 10000
-                    connection.instanceFollowRedirects = false
-                    if (connection.responseCode != 200) return@submit
-                    val bytes = connection.inputStream.use { input ->
-                        val output = java.io.ByteArrayOutputStream()
-                        val buffer = ByteArray(8192)
-                        while (true) {
-                            val n = input.read(buffer)
-                            if (n < 0) break
-                            if (output.size() + n > 2 * 1024 * 1024) return@submit
-                            output.write(buffer, 0, n)
-                        }
-                        output.toByteArray()
-                    }
+                    val bytes = HttpsTransfer.bytes(address, PreviewPolicy.MAX_BYTES, token, deadline,
+                        PreviewPolicy::cdn, PreviewPolicy.headers(media.source))
                     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
                     val options = BitmapFactory.Options().apply {
-                        var sample = 1
-                        while (bounds.outWidth / sample > 720 || bounds.outHeight / sample > 720) sample *= 2
-                        inSampleSize = sample
+                        inSampleSize = PreviewPolicy.sample(bounds.outWidth, bounds.outHeight)
                     }
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-                    ui { image.setImageBitmap(bitmap) }
-                } catch (_: Exception) { /* Preview failure must not block selection. */ }
-                finally { connection?.disconnect() }
+                    loaded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+                    if (loaded != null) break
+                } catch (_: Exception) {
+                    // A preview failure must never block media selection or download.
+                }
+            }
+            val bitmap = loaded
+            ui {
+                if (token.get() || image.parent == null) {
+                    bitmap?.recycle()
+                } else if (bitmap != null) {
+                    image.setImageBitmap(bitmap)
+                    state.visibility = View.GONE
+                    state.setOnClickListener(null)
+                } else {
+                    state.text = "Aperçu indisponible · Réessayer\nLe média reste sélectionnable"
+                    state.isEnabled = true
+                    state.setOnClickListener { loadPreview(media, image, state) }
+                }
             }
         }
     }
@@ -474,7 +503,10 @@ class MainActivity : Activity() {
         super.onResume()
         if (::screen.isInitialized) {
             screen.resume()
-            if (::appUpdates.isInitialized && appUpdates.hasDownloaded()) screen.updateApp.text = "Installer la mise à jour téléchargée"
+            if (::appUpdates.isInitialized && appUpdates.hasDownloaded()) {
+                screen.updateApp.text = "Installer la mise à jour téléchargée"
+                screen.openSettings()
+            }
             if (waitingForInstallPermission) {
                 waitingForInstallPermission = false
                 if (packageManager.canRequestPackageInstalls()) offerInstall()
@@ -485,6 +517,7 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         cancelled.set(true); operation?.let { extractor.cancel(it) }
+        previewToken.set(true)
         worker.shutdownNow(); previews.shutdownNow(); timer.shutdownNow()
         appCheckToken.set(true); appChecks.shutdownNow()
         super.onDestroy()

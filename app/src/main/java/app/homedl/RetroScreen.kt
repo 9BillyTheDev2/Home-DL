@@ -63,7 +63,8 @@ class RetroScreen(private val activity: Activity) {
     private val phase = label("EN ATTENTE", 12f, GREEN)
     private val count = label("00 MÉDIA", 12f, CYAN)
     private val placeholder = LinearLayout(activity)
-    private val preferences = activity.getSharedPreferences("appearance", Activity.MODE_PRIVATE)
+    private lateinit var settings: LinearLayout
+    private lateinit var settingsToggle: Button
 
     init {
         val scroll = ScrollView(activity).apply {
@@ -100,20 +101,6 @@ class RetroScreen(private val activity: Activity) {
         headerText.addView(dashboard)
         header.addView(headerText)
         content.addView(header, spaced(-1, -2, 0, 16))
-
-        val appPanel = section(content, "HOME-DL  /  MISES À JOUR", CYAN)
-        appUpdateStatus.apply {
-            text = "Version " + activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
-            textSize = 12f
-            setTextColor(MUTED)
-            setPadding(0, 0, 0, dp(8))
-        }
-        appPanel.addView(appUpdateStatus)
-        appPanel.addView(appUpdateProgress, LinearLayout.LayoutParams(-1, dp(12)).apply {
-            bottomMargin = dp(12)
-        })
-        decorateButton(updateApp, "Vérifier la mise à jour de l’app", false)
-        appPanel.addView(updateApp, LinearLayout.LayoutParams(-1, -2))
 
         val source = section(content, "01  /  ENTREZ DANS LE FLUX", ORANGE)
         source.addView(label("Collez un lien, récupérez l’instant.", 15f, TEXT))
@@ -170,50 +157,52 @@ class RetroScreen(private val activity: Activity) {
         feedback.addView(diagnostic, spaced(-1, dp(48), 10, 0))
         content.addView(feedback, spaced(-1, -2, 0, 16))
 
-        val settingsToggle = Button(activity)
-        decorateButton(settingsToggle, "Réglages du terminal  +", false)
+        settingsToggle = Button(activity)
+        decorateButton(settingsToggle, "Paramètres  +", false)
         content.addView(settingsToggle, spaced(-1, dp(48), 0, 8))
-        val settings = LinearLayout(activity).apply {
+        settings = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             background = shape(PANEL, BORDER)
             setPadding(dp(14), dp(8), dp(14), dp(12))
             visibility = View.GONE
         }
         automaticUpdates.apply {
-            text = "Moteur : mise à jour automatique"
+            text = "Mettre automatiquement le moteur à jour"
             textSize = 13f
             setTextColor(TEXT)
             minHeight = dp(56)
             thumbTintList = ColorStateList.valueOf(GREEN)
             trackTintList = ColorStateList.valueOf(BORDER)
         }
+        settings.addView(label("MOTEUR DE RÉCUPÉRATION", 11f, GREEN))
+        settings.addView(label("Mis à jour séparément, sans réinstaller Home-DL.", 12f, MUTED))
         settings.addView(automaticUpdates)
         decorateButton(updateEngine, "Vérifier le moteur maintenant", false)
         settings.addView(updateEngine, LinearLayout.LayoutParams(-1, dp(48)))
         automaticAppUpdates.apply {
-            text = "Application : rechercher les mises à jour"
+            text = "Rechercher automatiquement les mises à jour de l’app"
             textSize = 13f
             setTextColor(TEXT)
             minHeight = dp(56)
             thumbTintList = ColorStateList.valueOf(CYAN)
             trackTintList = ColorStateList.valueOf(BORDER)
         }
+        settings.addView(label("L’installation d’une nouvelle APK demande votre confirmation.", 12f, MUTED))
         settings.addView(automaticAppUpdates)
-        val animation = Switch(activity).apply {
-            text = "Pluie de code animée"
-            textSize = 13f
-            setTextColor(TEXT)
-            minHeight = dp(56)
-            thumbTintList = ColorStateList.valueOf(CYAN)
-            trackTintList = ColorStateList.valueOf(BORDER)
-            isChecked = preferences.getBoolean("rain", true)
-            setOnCheckedChangeListener { _, enabled ->
-                preferences.edit().putBoolean("rain", enabled).apply()
-                rain.setAnimationEnabled(enabled)
-            }
+        val appPanel = section(settings, "APPLICATION", CYAN)
+        appUpdateStatus.apply {
+            text = "Version " + activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
+            textSize = 12f
+            setTextColor(MUTED)
+            setPadding(0, 0, 0, dp(8))
         }
-        rain.setAnimationEnabled(animation.isChecked)
-        settings.addView(animation)
+        appPanel.addView(appUpdateStatus)
+        appPanel.addView(appUpdateProgress, LinearLayout.LayoutParams(-1, dp(12)).apply {
+            bottomMargin = dp(12)
+        })
+        decorateButton(updateApp, "Vérifier la mise à jour de l’app", false)
+        appPanel.addView(updateApp, LinearLayout.LayoutParams(-1, -2))
+
         content.addView(settings, spaced(-1, -2, 0, 12))
         settingsToggle.setOnClickListener {
             val open = settings.visibility != View.VISIBLE
@@ -273,6 +262,11 @@ class RetroScreen(private val activity: Activity) {
         operationBar.isIndeterminate = percent == null
         if (percent != null) operationBar.progress = percent.coerceIn(0, 100)
         operationBar.contentDescription = message
+    }
+
+    fun openSettings() {
+        settings.visibility = View.VISIBLE
+        settingsToggle.text = "Paramètres  −"
     }
 
     fun hideProgress() { operationPanel.visibility = View.GONE }
@@ -372,11 +366,9 @@ private class CodeRain(context: android.content.Context) : View(context) {
     private val heads = FloatArray(18) { -it * 17f }
     private val glyphs = charArrayOf('0', '1', ':', '/', '+', '7', '8', '9')
     private var running = false
-    private var enabled = true
     private var frame = 0
     init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
 
-    fun setAnimationEnabled(value: Boolean) { enabled = value; invalidate() }
     fun resume() { running = true; invalidate() }
     fun pause() { running = false }
 
@@ -407,7 +399,7 @@ private class CodeRain(context: android.content.Context) : View(context) {
         paint.color = Color.argb(75, 107, 230, 243)
         canvas.drawLine(width * 0.80f, height - 13 * unit, width.toFloat(), height - 13 * unit, paint)
         paint.style = Paint.Style.FILL
-        if (running && enabled && isShown && ValueAnimator.areAnimatorsEnabled()) {
+        if (running && isShown && ValueAnimator.areAnimatorsEnabled()) {
             for (i in heads.indices) {
                 heads[i] += unit * (2 + i % 3)
                 if (heads[i] > height + 6 * step) heads[i] = -step
