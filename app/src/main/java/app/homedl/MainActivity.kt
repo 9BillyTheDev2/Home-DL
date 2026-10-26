@@ -62,7 +62,10 @@ class MainActivity : Activity() {
         updateEngine = screen.updateEngine
         automaticUpdates = screen.automaticUpdates
         screen.automaticAppUpdates.isChecked = appUpdates.enabled()
-        screen.automaticAppUpdates.setOnCheckedChangeListener { _, value -> appUpdates.setEnabled(value) }
+        screen.automaticAppUpdates.setOnCheckedChangeListener { _, value ->
+            appUpdates.setEnabled(value)
+            screen.updateSwitchLabels()
+        }
         screen.updateApp.setOnClickListener {
             if (busy) return@setOnClickListener
             if (appUpdates.hasDownloaded()) offerInstall()
@@ -115,7 +118,11 @@ class MainActivity : Activity() {
             status.text = "Annulation…"
         }
         automaticUpdates.isChecked = engineUpdates.enabled()
-        automaticUpdates.setOnCheckedChangeListener { _, enabled -> engineUpdates.setEnabled(enabled) }
+        automaticUpdates.setOnCheckedChangeListener { _, enabled ->
+            engineUpdates.setEnabled(enabled)
+            screen.updateSwitchLabels()
+        }
+        screen.updateSwitchLabels()
         updateEngine.setOnClickListener {
             begin("Mise à jour du moteur…", 180, Stage.UPDATE, initialize = false) { _, token ->
                 extractor.init()

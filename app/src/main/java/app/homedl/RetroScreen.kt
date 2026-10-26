@@ -171,8 +171,6 @@ class RetroScreen(private val activity: Activity) {
             textSize = 13f
             setTextColor(TEXT)
             minHeight = dp(56)
-            thumbTintList = ColorStateList.valueOf(GREEN)
-            trackTintList = ColorStateList.valueOf(BORDER)
         }
         settings.addView(label("MOTEUR DE RÉCUPÉRATION", 11f, GREEN))
         settings.addView(label("Mis à jour séparément, sans réinstaller Home-DL.", 12f, MUTED))
@@ -184,8 +182,6 @@ class RetroScreen(private val activity: Activity) {
             textSize = 13f
             setTextColor(TEXT)
             minHeight = dp(56)
-            thumbTintList = ColorStateList.valueOf(CYAN)
-            trackTintList = ColorStateList.valueOf(BORDER)
         }
         settings.addView(label("L’installation d’une nouvelle APK demande votre confirmation.", 12f, MUTED))
         settings.addView(automaticAppUpdates)
@@ -207,7 +203,7 @@ class RetroScreen(private val activity: Activity) {
         settingsToggle.setOnClickListener {
             val open = settings.visibility != View.VISIBLE
             settings.visibility = if (open) View.VISIBLE else View.GONE
-            settingsToggle.text = if (open) "Réglages du terminal  −" else "Réglages du terminal  +"
+            settingsToggle.text = if (open) "Paramètres  −" else "Paramètres  +"
         }
 
         content.addView(label("02  /  VOTRE SÉLECTION", 11f, CYAN).apply {
@@ -262,6 +258,27 @@ class RetroScreen(private val activity: Activity) {
         operationBar.isIndeterminate = percent == null
         if (percent != null) operationBar.progress = percent.coerceIn(0, 100)
         operationBar.contentDescription = message
+    }
+
+    fun updateSwitchLabels() {
+        updateSwitch(automaticUpdates, "Mise à jour automatique du moteur", GREEN)
+        updateSwitch(automaticAppUpdates, "Recherche automatique des mises à jour de l’app", CYAN)
+    }
+
+    private fun updateSwitch(control: Switch, title: String, activeColor: Int) {
+        val enabledText = if (control.isChecked) "Activé" else "Désactivé"
+        control.text = title + "\n" + enabledText
+        control.contentDescription = title + " : " + enabledText
+        if (android.os.Build.VERSION.SDK_INT >= 30) control.stateDescription = enabledText
+        val states = arrayOf(
+            intArrayOf(-android.R.attr.state_enabled),
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf()
+        )
+        control.thumbTintList = ColorStateList(states,
+            intArrayOf(MUTED, activeColor, Color.rgb(133, 143, 143)))
+        control.trackTintList = ColorStateList(states,
+            intArrayOf(BORDER, activeColor, Color.rgb(63, 75, 75)))
     }
 
     fun openSettings() {

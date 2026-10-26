@@ -237,3 +237,8 @@ Aperçus : transferts HTTPS bornés à 8 Mio, redirections contrôlées sur CDN 
 
 
 Validation 0.2.8 : exécution 40297008560 réussie sur 4ac55f63dfff8915ce6e0359bf75ea6049535b00, testDebugUnitTest, assembleRelease, lintRelease et vérification apksigner, puis publication. Manifeste latest 15/0.2.8 vérifié ; APK publique téléchargée (65090384 octets), SHA-256 2a74413d99f240b42301f0e0cea6720bfc5979d75536be4d1df37564ca96fa4c conforme. Archive ZIP intacte et asset navigateur absent. Aucun émulateur/appareil Android disponible dans l’environnement : affichage des paramètres, reprise d’aperçu et installation restent à vérifier sur téléphone. Aucun nouveau succès Instagram revendiqué.
+
+
+## 0.2.9 — état explicite des interrupteurs
+
+Les deux options automatiques affichent Activé/Désactivé, synchronisé avec isChecked à l’ouverture et après chaque changement. Couleurs de curseur et de piste différenciées selon l’état (vert/cyan actif, gris inactif), état vocal explicite et indication d’indisponibilité conservée pendant une opération. Aucun changement de préférence ni d’automatisation. Libellé Paramètres corrigé également après ouverture/fermeture. Les captures utilisateur confirmaient des couleurs identiques entre états ; validation visuelle sur appareil restant nécessaire. Pas de test unitaire ajouté pour cette modification d’apparence réversible ; suite existante, compilation et lint à exécuter.
