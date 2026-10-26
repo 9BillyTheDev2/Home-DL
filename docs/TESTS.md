@@ -179,3 +179,8 @@ Tests ciblés de politique de navigation : page Instagram autorisée, accès exp
 
 
 Validation 0.2.7 : exécution 40235097810 réussie sur 08120c6ce0531f434888f25c2431b65b8911ea76 ; tests JS (8 scénarios + capture fetch), testDebugUnitTest, assembleRelease, lintRelease et publication. Six tests locaux du résultat/navigation réussis ; suite Android de 63 méthodes dans les sources. Manifeste latest 14/0.2.7 vérifié. APK publique téléchargée : 65218790 octets ; SHA-256 f10009f06d3043ba92e9057eb95a43801ffadbeae87f6ba04edba449794f701d conforme. Une copie locale initiale a été constatée tronquée ; un nouveau téléchargement complet a passé les contrôles taille/SHA puis la vérification apksig dans le même processus. Signature v2 et certificat permanent validés. Notes de release décrivant précisément le comportement et les limites publiées. Le déclencheur exact de la navigation des deux essais 0.2.6 reste inconnu ; les catégories ajoutées permettront de le distinguer. Aucun succès Instagram supplémentaire revendiqué avant essai appareil.
+
+
+## Retrait du navigateur local — 26 octobre 2026
+
+Suppression du code WebView et de ses tests/assets dédiés, des points d’entrée MainActivity/RetroScreen, de l’activité du manifeste, de la dépendance WebKit et de l’étape CI JavaScript devenue sans objet. Vérifier l’absence de proposition navigateur après une analyse Instagram en échec ; conserver diagnostic, progression, analyse directe et téléchargement. Compilation Android et tests existants à exécuter ; aucune nouvelle APK publiée à cette étape. Les descriptions navigateur précédentes sont historiques.

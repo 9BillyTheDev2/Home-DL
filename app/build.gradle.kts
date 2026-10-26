@@ -34,7 +34,6 @@ android {
 }
 dependencies {
     implementation("androidx.core:core:1.15.0")
-    implementation("androidx.webkit:webkit:1.12.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")

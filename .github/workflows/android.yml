@@ -24,8 +24,6 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Vérifier la capture du navigateur sur données synthétiques
-        run: node scripts/test_browser_capture.cjs
       - name: Intégrer le moteur officiel vérifié
         run: python3 scripts/prepare_engine.py
       - uses: actions/setup-java@v4

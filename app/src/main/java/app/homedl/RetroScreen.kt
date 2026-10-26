@@ -30,7 +30,6 @@ class RetroScreen(private val activity: Activity) {
     val analyze = Button(activity)
     val clearLink = Button(activity)
     val diagnostic = Button(activity)
-    val browserInstagram = Button(activity)
     val status = TextView(activity)
     val updateEngine = Button(activity)
     val automaticUpdates = Switch(activity)
@@ -169,9 +168,6 @@ class RetroScreen(private val activity: Activity) {
         decorateButton(diagnostic, "Voir / copier le diagnostic", false)
         diagnostic.visibility = View.GONE
         feedback.addView(diagnostic, spaced(-1, dp(48), 10, 0))
-        decorateButton(browserInstagram, "Essayer le navigateur local", true)
-        browserInstagram.visibility = View.GONE
-        feedback.addView(browserInstagram, spaced(-1, -2, 10, 0))
         content.addView(feedback, spaced(-1, -2, 0, 16))
 
         val settingsToggle = Button(activity)
