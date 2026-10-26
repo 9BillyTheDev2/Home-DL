@@ -242,3 +242,6 @@ Validation 0.2.8 : exécution 40297008560 réussie sur 4ac55f63dfff8915ce6e0359b
 ## 0.2.9 — état explicite des interrupteurs
 
 Les deux options automatiques affichent Activé/Désactivé, synchronisé avec isChecked à l’ouverture et après chaque changement. Couleurs de curseur et de piste différenciées selon l’état (vert/cyan actif, gris inactif), état vocal explicite et indication d’indisponibilité conservée pendant une opération. Aucun changement de préférence ni d’automatisation. Libellé Paramètres corrigé également après ouverture/fermeture. Les captures utilisateur confirmaient des couleurs identiques entre états ; validation visuelle sur appareil restant nécessaire. Pas de test unitaire ajouté pour cette modification d’apparence réversible ; suite existante, compilation et lint à exécuter.
+
+
+Validation 0.2.9 : exécution 40299833602 sur d32fc56ccc5d6d2361239a83aabeabc1f09812fa, tests JVM, assembleRelease, lintRelease et contrôle de signature réussis ; release publiée. Manifeste latest 16/0.2.9 vérifié ; APK téléchargée, 65091072 octets, SHA-256 45cb1d2fd67529fe2a532503b151f71dac40cfdd4709482d84cce1daa7c86d17 conforme et ZIP intact. Affichage réel Activé/Désactivé et contrastes des interrupteurs à confirmer sur téléphone ; pas de test d’interface Android exécuté dans l’environnement.
